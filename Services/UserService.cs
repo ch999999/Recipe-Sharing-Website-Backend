@@ -15,6 +15,27 @@ public class UserService
         _context = context;
     }
 
+    public User? GetById(int id)
+    {
+        return _context.Users
+            .AsNoTracking()
+            .SingleOrDefault(u => u.Id == id);
+    }
+
+    public User? GetByEmail(string email)
+    {
+        return _context.Users
+            .AsNoTracking()
+            .SingleOrDefault(u => u.Email == email);
+    }
+
+    public User? GetByUsername(string username)
+    {
+        return _context.Users
+            .AsNoTracking()
+            .SingleOrDefault(u => u.Username == username);
+    }
+
     public User? CreateUser(User newUser)
     {
         var plainPassword = newUser.Password;
@@ -32,4 +53,19 @@ public class UserService
         };
     }
 
+    
+
 }
+
+//syntax for selecting specific fields
+//var user = _context.Users
+//    .Where(u => u.Id == id)
+//    .Select(u=>new User()
+//    {
+//        Id = u.Id,
+//        Username=u.Username,
+//        Email = u.Email,
+//    })
+//    .SingleOrDefault();
+
+//return user;
