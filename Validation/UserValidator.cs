@@ -80,7 +80,7 @@ namespace RecipeSiteBackend.Validation
             return true;
         }
 
-        private static bool emailIsValid(string email)
+        public static bool emailIsValid(string email)
         {
             try
             {

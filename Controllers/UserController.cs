@@ -1,10 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using RecipeSiteBackend.Services;
 using RecipeSiteBackend.Models;
+using RecipeSiteBackend.Services;
 using RecipeSiteBackend.Validation;
-using System.Data;
-using Npgsql;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace RecipeSiteBackend.Controllers
 {
@@ -12,7 +11,7 @@ namespace RecipeSiteBackend.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        UserService _service;
+        private readonly UserService _service;
 
         public UserController(UserService service)
         {
@@ -36,11 +35,51 @@ namespace RecipeSiteBackend.Controllers
 
         //}
 
+        [HttpPost]
+        [Route("/api/User/login")]
+        public async Task<IActionResult> Login(LoginUser loginUser)
+        {
+            
+            if (string.IsNullOrEmpty(loginUser.Identifier))
+            {
+                return BadRequest(new ValidationError
+                {
+                    ErrorField = "Credentials",
+                    Message = "Credentials cannot be empty"
+                });
+            }
 
+            User loggedInUser = await _service.Login(loginUser.Identifier, loginUser.Password);
+            if (loggedInUser != null)
+            {
+                return Ok(loggedInUser);
+            }
 
+            return BadRequest(new { ErrorField = "Password", Message = "Invalid Credentials or Password." } );
+        }
+
+        //[Authorize(Roles = "Everyone")]
+        [HttpGet]
+        public IActionResult Test()
+        {
+            string token = Request.Headers["Authorization"];
+            if (token.StartsWith("Bearer"))
+            {
+                token = token.Substring("Bearer ".Length).Trim();
+
+            }
+            var handler = new JwtSecurityTokenHandler();
+            JwtSecurityToken jwt = handler.ReadJwtToken(token);
+            var claims = new Dictionary<string, string>();
+            foreach(var claim in jwt.Claims)
+            {
+                claims.Add(claim.Type, claim.Value);
+            }
+            return Ok(claims);
+        }
 
         [HttpPost]
-        public IActionResult CreateUser(User newUser)
+        public async Task<IActionResult> CreateUser(User newUser)
         {
             //check if user input is valid.
             var validationError = UserValidator.validateInput(newUser);
@@ -51,7 +90,7 @@ namespace RecipeSiteBackend.Controllers
             }
 
             //check if username and email are taken already or not.
-            if(_service.GetByUsername(newUser.Username)!=null) 
+            if (await _service.GetByUsername(newUser.Username) != null)
             {
                 return Conflict(new ValidationError
                 {
@@ -60,7 +99,7 @@ namespace RecipeSiteBackend.Controllers
                 });
             }
 
-            if(_service.GetByEmail(newUser.Email)!=null)
+            if (await _service.GetByEmail(newUser.Email) != null)
             {
                 return Conflict(new ValidationError
                 {
@@ -69,19 +108,11 @@ namespace RecipeSiteBackend.Controllers
                 });
             }
 
+            newUser.Role = "Normal";
+            var user = await _service.CreateUser(newUser);
 
-            try
-            {
-                var user = _service.CreateUser(newUser);
-                return Ok(user);
-            }
-            catch
-            {
-                return BadRequest();
-            }
-
-
-
+            return Ok(user);
+            
         }
     }
 }
