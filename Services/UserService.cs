@@ -32,6 +32,13 @@ public class UserService
             .SingleOrDefaultAsync(u => u.Id == id);
     }
 
+    public async Task<User?> GetByUUID(string uuid)
+    {
+        return await _context.Users
+            .AsNoTracking()
+            .SingleOrDefaultAsync(u=>u.UUID == uuid);
+    }
+
     public async Task<User?> GetByEmail(string email)
     {
         return await _context.Users
@@ -51,14 +58,31 @@ public class UserService
         var plainPassword = newUser.Password;
         var hashPassword = BCrypt.Net.BCrypt.HashPassword(plainPassword);
         newUser.Password = hashPassword;
-      
+
+        //generate uuid for user
+        var uuidExists = true;
+        string newUUID = Guid.NewGuid().ToString();
+        while (uuidExists)
+        {
+            var uuid = Guid.NewGuid().ToString();
+            if (await GetByUUID(uuid) == null)
+            {
+                newUUID = uuid;
+                uuidExists = false;
+            }
+        }
+
+        newUser.UUID = newUUID;
+
+
         await _context.Users.AddAsync(newUser);
         await _context.SaveChangesAsync();
 
         return new User {
         Id = newUser.Id,
         Username=newUser.Username,
-        Email=newUser.Email
+        Email=newUser.Email,
+        UUID = newUUID,
         };
     }
 
@@ -87,14 +111,14 @@ public class UserService
             Subject = new ClaimsIdentity(new Claim[]
             {
                 new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.GivenName, user.Email),
                 new Claim(ClaimTypes.Role, user.Role)
                 //other claims
             }),
             IssuedAt = DateTime.UtcNow,
             Issuer = _configuration["JWT:Issuer"],
             Audience = _configuration["JWT:Audience"],
-            Expires = DateTime.UtcNow.AddMinutes(30),
+            Expires = DateTime.UtcNow.AddMinutes(90),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
 
         };
@@ -103,6 +127,7 @@ public class UserService
         user.Token = tokenHandler.WriteToken(token);
         return new User 
         {
+            Id = user.Id,
             Username = user.Username,
             Email = user.Email,
             Token = user.Token

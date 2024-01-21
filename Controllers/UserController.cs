@@ -1,9 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.IdentityModel.Tokens;
 using RecipeSiteBackend.Models;
 using RecipeSiteBackend.Services;
 using RecipeSiteBackend.Validation;
 using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 
 namespace RecipeSiteBackend.Controllers
 {
@@ -12,10 +16,12 @@ namespace RecipeSiteBackend.Controllers
     public class UserController : ControllerBase
     {
         private readonly UserService _service;
+        private readonly IConfiguration _configuration;
 
-        public UserController(UserService service)
+        public UserController(UserService service, IConfiguration config)
         {
             _service = service;
+            _configuration = config;
         }
 
         //[HttpGet("{id}")]
@@ -58,26 +64,49 @@ namespace RecipeSiteBackend.Controllers
             return BadRequest(new { ErrorField = "Password", Message = "Invalid Credentials or Password." } );
         }
 
-        //[Authorize(Roles = "Everyone")]
-        [HttpGet]
-        public IActionResult Test()
+        [Authorize]
+        [HttpPost]
+        [Route("/api/User/authcheck")]
+        public async Task<IActionResult> ValidateToken()
         {
-            string token = Request.Headers["Authorization"];
-            if (token.StartsWith("Bearer"))
-            {
-                token = token.Substring("Bearer ".Length).Trim();
+            //code for jwt authentication (not necessary due to [Authorize] performing the same thing)
 
-            }
-            var handler = new JwtSecurityTokenHandler();
-            JwtSecurityToken jwt = handler.ReadJwtToken(token);
-            var claims = new Dictionary<string, string>();
-            foreach(var claim in jwt.Claims)
-            {
-                claims.Add(claim.Type, claim.Value);
-            }
-            return Ok(claims);
+            //string token = Request.Headers["Authorization"];
+            //if (token.StartsWith("Bearer"))
+            //{
+            //    token = token.Substring("Bearer ".Length).Trim();
+            //}
+
+            /////////
+            //var key = Encoding.ASCII.GetBytes(_configuration["JWT:SecretKey"]);
+            //var signingkey = new SymmetricSecurityKey(key);
+            //var signingkeys = new List<SecurityKey> { signingkey };
+            //var validationParameters = new TokenValidationParameters
+            //{
+            //    ValidateIssuer = true,
+            //    ValidIssuer = _configuration["JWT:Issuer"],
+            //    ValidateAudience = true,
+            //    ValidAudience = _configuration["JWT:Audience"],
+            //    ValidateIssuerSigningKey = true,
+            //    IssuerSigningKeys = signingkeys,
+            //    ValidateLifetime = true
+            //};
+
+            //try
+            //{
+            //    var handler = new JwtSecurityTokenHandler();
+            //    handler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+            //    return Ok();
+            //}catch(SecurityTokenValidationException ex)
+            //{
+            //    return Unauthorized(new { Error = "Invalid or expired access token." });
+            //}
+            return Ok();
+            
+            
         }
 
+        [EnableCors]
         [HttpPost]
         public async Task<IActionResult> CreateUser(User newUser)
         {

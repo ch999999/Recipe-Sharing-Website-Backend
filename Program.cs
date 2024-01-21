@@ -6,12 +6,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using RecipeSiteBackend.CustomErrorHandlers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace RecipeSiteBackend;
 
 public class Program
 {
-    
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
@@ -20,30 +21,34 @@ public class Program
         builder.Services.AddScoped<UserService>();
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
-
-        //Configure JWT
-        //builder.Services.AddAuthentication(options =>
-        //{
-        //    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        //    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        //})
-        //.AddJwtBearer(options =>
-        //{
-        //    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-        //    {
-        //        ValidateIssuerSigningKey = true,
-        //        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["JWT:SecretKey"])),
-        //        ValidateIssuer = true,
-        //        ValidIssuer = builder.Configuration["JWT:Issuer"],
-        //        ValidateAudience = true,
-        //        ValidAudience = builder.Configuration["JWT:Audience"]
-        //    };   
-        //});
+        //builder.Services.AddEndpointsApiExplorer();
+        //builder.Services.AddSwaggerGen();
 
         //My DbContext
         builder.Services.AddNpgsql<RecipesDbContext>(builder.Configuration.GetConnectionString("RecipesDB"));
+
+        //Configure JWT
+        builder.Services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            //development only
+            options.RequireHttpsMetadata = true;
+            options.SaveToken = true;
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateLifetime = true,
+                ValidateIssuer = true,
+                ValidIssuer = builder.Configuration["JWT:Issuer"],
+                ValidateAudience = true,
+                ValidAudience = builder.Configuration["JWT:Audience"],
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["JWT:SecretKey"])),
+            };
+        });
 
         builder.Services.AddHealthChecks();
         builder.Services.AddEndpointsApiExplorer();
@@ -75,6 +80,9 @@ public class Program
     });
         });
 
+        //enable when not in development
+        builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthErrorHandler>();
+
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
@@ -83,12 +91,13 @@ public class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+        app.UseCors();
 
-        app.UseHttpsRedirection();
-
-        app.UseAuthorization();
+        //app.UseHttpsRedirection();
 
         app.UseAuthentication();
+
+        app.UseAuthorization();
 
         app.MapControllers();
 
