@@ -16,6 +16,11 @@ public class User
     public string? Username { get; set; }
 
     [Required]
+    public string? Firstname { get; set; }
+
+    public string? Lastname { get; set; }
+
+    [Required]
     public string? Email { get; set; }
 
     [Required]
@@ -24,6 +29,9 @@ public class User
     public string? UUID { get; set; }
 
     public string? Role { get; set; }
+
+    public DateTime CreatedDate { get; set; } 
+    public DateTime LastModifiedDate { get; set; }
 
     [NotMapped]
     public string? Token { get; set; }

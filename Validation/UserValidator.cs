@@ -12,6 +12,15 @@ namespace RecipeSiteBackend.Validation
     {
         public static ValidationError? validateInput(User user)
         {
+            if(string.IsNullOrEmpty(user.Firstname))
+            {
+                return new ValidationError
+                {
+                    ErrorField = "First name",
+                    Message = "Firstname is required"
+                };
+            }
+
             if(string.IsNullOrEmpty(user.Password)||!passwordIsValid(user.Password))
             {
                 return new ValidationError

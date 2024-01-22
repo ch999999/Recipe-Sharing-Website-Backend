@@ -72,8 +72,7 @@ public class UserService
             }
         }
 
-        newUser.UUID = newUUID;
-
+        newUser.UUID = newUUID;        
 
         await _context.Users.AddAsync(newUser);
         await _context.SaveChangesAsync();
@@ -81,6 +80,8 @@ public class UserService
         return new User {
         Id = newUser.Id,
         Username=newUser.Username,
+        Firstname = newUser.Firstname,
+        Lastname = newUser.Lastname,
         Email=newUser.Email,
         UUID = newUUID,
         };
@@ -111,7 +112,7 @@ public class UserService
             Subject = new ClaimsIdentity(new Claim[]
             {
                 new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.GivenName, user.Email),
+                new Claim(ClaimTypes.GivenName, user.Firstname),
                 new Claim(ClaimTypes.Role, user.Role)
                 //other claims
             }),
@@ -127,9 +128,8 @@ public class UserService
         user.Token = tokenHandler.WriteToken(token);
         return new User 
         {
-            Id = user.Id,
+            UUID = user.UUID,
             Username = user.Username,
-            Email = user.Email,
             Token = user.Token
         };
     }
