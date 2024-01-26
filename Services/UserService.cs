@@ -23,15 +23,6 @@ public class UserService
         _configuration = configuration;
     }
 
-    public async Task<User?> GetById(int id)
-    {
-        //return await _context.Users.AsNoTracking().SingleOrDefaultAsync();
-        
-        return await _context.Users
-            .AsNoTracking()
-            .SingleOrDefaultAsync(u => u.Id == id);
-    }
-
     public async Task<User?> GetByUUID(string uuid)
     {
         return await _context.Users
@@ -73,17 +64,18 @@ public class UserService
         }
 
         newUser.UUID = newUUID;        
+        newUser.CreatedDate = DateTime.Now.ToUniversalTime();
+        newUser.LastModifiedDate = DateTime.Now.ToUniversalTime();
 
         await _context.Users.AddAsync(newUser);
         await _context.SaveChangesAsync();
 
         return new User {
-        Id = newUser.Id,
+        UUID = newUUID,
         Username=newUser.Username,
         Firstname = newUser.Firstname,
         Lastname = newUser.Lastname,
-        Email=newUser.Email,
-        UUID = newUUID,
+        Email=newUser.Email
         };
     }
 

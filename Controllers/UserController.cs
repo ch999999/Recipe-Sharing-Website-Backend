@@ -50,8 +50,8 @@ namespace RecipeSiteBackend.Controllers
             {
                 return BadRequest(new ValidationError
                 {
-                    ErrorField = "Credentials",
-                    Message = "Credentials cannot be empty"
+                    ErrorField = "identifier",
+                    Message = "Username/email cannot be empty"
                 });
             }
 
@@ -61,9 +61,10 @@ namespace RecipeSiteBackend.Controllers
                 return Ok(loggedInUser);
             }
 
-            return BadRequest(new { ErrorField = "Password", Message = "Invalid Credentials or Password." } );
+            return BadRequest(new { ErrorField = "password", Message = "Invalid Username/Email or Password." } );
         }
 
+        [EnableCors]
         [Authorize]
         [HttpPost]
         [Route("/api/User/authcheck")]
@@ -123,7 +124,7 @@ namespace RecipeSiteBackend.Controllers
             {
                 return Conflict(new ValidationError
                 {
-                    ErrorField = "Username",
+                    ErrorField = "username",
                     Message = "Username already taken"
                 });
             }
@@ -132,7 +133,7 @@ namespace RecipeSiteBackend.Controllers
             {
                 return Conflict(new ValidationError
                 {
-                    ErrorField = "Email",
+                    ErrorField = "email",
                     Message = "Email already taken"
                 });
             }

@@ -6,10 +6,10 @@ namespace RecipeSiteBackend.Models;
 
 [Index(nameof(Email), IsUnique = true)]
 [Index(nameof(Username), IsUnique = true)]
-[Index(nameof(UUID), IsUnique = true)]
 public class User
 {
-    public int Id { get; set; }
+    [Key]
+    public string? UUID { get; set; }
 
     [Required]
     [MaxLength(64)]
@@ -26,7 +26,6 @@ public class User
     [Required]
     public string? Password { get; set; }
 
-    public string? UUID { get; set; }
 
     public string? Role { get; set; }
 

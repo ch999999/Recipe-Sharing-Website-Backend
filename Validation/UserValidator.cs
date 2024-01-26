@@ -16,7 +16,7 @@ namespace RecipeSiteBackend.Validation
             {
                 return new ValidationError
                 {
-                    ErrorField = "First name",
+                    ErrorField = "firstname",
                     Message = "Firstname is required"
                 };
             }
@@ -25,7 +25,7 @@ namespace RecipeSiteBackend.Validation
             {
                 return new ValidationError
                 {
-                    ErrorField = "Password",
+                    ErrorField = "password",
                     Message = "Password must be at least 8 characters long and contain both alphabets and numeric characters"
                 };
             }
@@ -34,7 +34,7 @@ namespace RecipeSiteBackend.Validation
             {
                 return new ValidationError
                 {
-                    ErrorField= "Email",
+                    ErrorField= "email",
                     Message = "Invalid Email"
                 };
             }
@@ -43,7 +43,7 @@ namespace RecipeSiteBackend.Validation
             {
                 return new ValidationError
                 {
-                    ErrorField = "Username",
+                    ErrorField = "username",
                     Message = "Username cannot be empty"
                 };
             }
@@ -54,7 +54,7 @@ namespace RecipeSiteBackend.Validation
             {
                 return new ValidationError
                 {
-                    ErrorField = "Username",
+                    ErrorField = "username",
                     Message = usernameValidation.Item2
                 };
             }
