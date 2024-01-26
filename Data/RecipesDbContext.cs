@@ -14,4 +14,5 @@ public class RecipesDbContext : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<Recipes> Recipes => Set<Recipes>();
     public DbSet<Recipe_Images> Recipe_Images => Set<Recipe_Images>();
+    public DbSet<Diets> Diets => Set<Diets>();
 }
