@@ -19,4 +19,5 @@ public class RecipesDbContext : DbContext
     public DbSet<Ingredient> Ingredients => Set<Ingredient>();
     public DbSet<Permitted_User> Policies => Set<Permitted_User>();
     public DbSet<Rating> Ratings => Set<Rating>();
+    public DbSet<Tag> Tags => Set<Tag>();
 }
