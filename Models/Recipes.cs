@@ -1,10 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RecipeSiteBackend.Models
 {
     public class Recipes
     {
-        public int Id { get; set; } 
+        [Key]
         public string? UUID { get; set; }
         public string? Title { get; set; }
         public string? Description { get; set; }
@@ -15,13 +16,12 @@ namespace RecipeSiteBackend.Models
         public string? Cuisine { get; set; }
         public string? Meal_Type { get; set; }
         public string? Source { get; set; }
-
-        [Column(TypeName="decimal(2,1)")]
-        public decimal Rating { get; set; }
         public User? Owner { get; set; }
         public DateTime CreatedDate { get; set; }
-        public DateTime LastMofifiedDate { get; set; }
+        public DateTime LastModifiedDate { get; set; }
         public bool IsViewableByPublic { get; set; }
+        public ICollection<Recipe_Images>? Images { get; set; }
+        public ICollection<Diets>? Diets { get; set; }
         
 
 

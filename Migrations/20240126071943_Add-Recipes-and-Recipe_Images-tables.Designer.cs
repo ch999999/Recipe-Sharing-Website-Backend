@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using RecipeSiteBackend.Data;
@@ -11,9 +12,11 @@ using RecipeSiteBackend.Data;
 namespace RecipeSiteBackend.Migrations
 {
     [DbContext(typeof(RecipesDbContext))]
-    partial class RecipesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240126071943_Add-Recipes-and-Recipe_Images-tables")]
+    partial class AddRecipesandRecipe_Imagestables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -66,7 +69,7 @@ namespace RecipeSiteBackend.Migrations
                     b.Property<bool>("IsViewableByPublic")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime>("LastModifiedDate")
+                    b.Property<DateTime>("LastMofifiedDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Meal_Type")
@@ -77,6 +80,9 @@ namespace RecipeSiteBackend.Migrations
 
                     b.Property<int>("Prep_Time_Mins")
                         .HasColumnType("integer");
+
+                    b.Property<decimal>("Rating")
+                        .HasColumnType("decimal(2,1)");
 
                     b.Property<int>("Servings")
                         .HasColumnType("integer");

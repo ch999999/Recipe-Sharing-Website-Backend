@@ -31,6 +31,7 @@ public class User
 
     public DateTime CreatedDate { get; set; } 
     public DateTime LastModifiedDate { get; set; }
+    public ICollection<Recipes>? Recipes { get; set; }
 
     [NotMapped]
     public string? Token { get; set; }
