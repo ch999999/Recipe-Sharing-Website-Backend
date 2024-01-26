@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RecipeSiteBackend.Models
 {
-    public class Recipes
+    public class Recipe
     {
         [Key]
         public string? UUID { get; set; }
@@ -20,8 +20,13 @@ namespace RecipeSiteBackend.Models
         public DateTime CreatedDate { get; set; }
         public DateTime LastModifiedDate { get; set; }
         public bool IsViewableByPublic { get; set; }
-        public ICollection<Recipe_Images>? Images { get; set; }
-        public ICollection<Diets>? Diets { get; set; }
+        public ICollection<Recipe_Image>? Images { get; set; }
+        public ICollection<Recipe_Video>? Videos { get; set; }
+        public ICollection<Diet>? Diets { get; set; }
+        public ICollection<Ingredient>? Ingredients { get; set;}
+        public ICollection<Permitted_User>? Policies { get; set; }
+        public ICollection<Rating>? Ratings { get; set; }
+        public ICollection<Tag>? Tags { get; set; }
         
 
 

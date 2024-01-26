@@ -31,7 +31,9 @@ public class User
 
     public DateTime CreatedDate { get; set; } 
     public DateTime LastModifiedDate { get; set; }
-    public ICollection<Recipes>? Recipes { get; set; }
+    public ICollection<Recipe>? Recipes { get; set; }
+    public ICollection<Permitted_User>? Policies { get; set; }
+    public ICollection<Rating>? Ratings { get; set; }
 
     [NotMapped]
     public string? Token { get; set; }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using RecipeSiteBackend.Data;
@@ -11,9 +12,11 @@ using RecipeSiteBackend.Data;
 namespace RecipeSiteBackend.Migrations
 {
     [DbContext(typeof(RecipesDbContext))]
-    partial class RecipesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240126095518_Add-Recipes-Users-Policies")]
+    partial class AddRecipesUsersPolicies
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -87,27 +90,6 @@ namespace RecipeSiteBackend.Migrations
                     b.HasIndex("RecipeUUID");
 
                     b.ToTable("Policies");
-                });
-
-            modelBuilder.Entity("RecipeSiteBackend.Models.Rating", b =>
-                {
-                    b.Property<string>("UserUUID")
-                        .HasColumnType("text");
-
-                    b.Property<string>("RecipeUUID")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("Score")
-                        .HasColumnType("decimal(2,1)");
-
-                    b.HasKey("UserUUID", "RecipeUUID");
-
-                    b.HasIndex("RecipeUUID");
-
-                    b.ToTable("Ratings");
                 });
 
             modelBuilder.Entity("RecipeSiteBackend.Models.Recipe", b =>
@@ -291,25 +273,6 @@ namespace RecipeSiteBackend.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("RecipeSiteBackend.Models.Rating", b =>
-                {
-                    b.HasOne("RecipeSiteBackend.Models.Recipe", "Recipe")
-                        .WithMany("Ratings")
-                        .HasForeignKey("RecipeUUID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("RecipeSiteBackend.Models.User", "User")
-                        .WithMany("Ratings")
-                        .HasForeignKey("UserUUID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Recipe");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("RecipeSiteBackend.Models.Recipe", b =>
                 {
                     b.HasOne("RecipeSiteBackend.Models.User", "Owner")
@@ -345,16 +308,12 @@ namespace RecipeSiteBackend.Migrations
 
                     b.Navigation("Policies");
 
-                    b.Navigation("Ratings");
-
                     b.Navigation("Videos");
                 });
 
             modelBuilder.Entity("RecipeSiteBackend.Models.User", b =>
                 {
                     b.Navigation("Policies");
-
-                    b.Navigation("Ratings");
 
                     b.Navigation("Recipes");
                 });
