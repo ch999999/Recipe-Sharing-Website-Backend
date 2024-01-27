@@ -6,7 +6,7 @@ namespace RecipeSiteBackend.Models
     public class Recipe
     {
         [Key]
-        public string? UUID { get; set; }
+        public Guid UUID { get; set; }
         public string? Title { get; set; }
         public string? Description { get; set; }
         public string? Difficulty { get; set; }
@@ -27,8 +27,8 @@ namespace RecipeSiteBackend.Models
         public ICollection<Permitted_User>? Policies { get; set; }
         public ICollection<Rating>? Ratings { get; set; }
         public ICollection<Tag>? Tags { get; set; }
-        
-
+        public ICollection<Note>? Notes { get; set; }
+        public ICollection<Instruction>? Instructions { get; set; }
 
 
 

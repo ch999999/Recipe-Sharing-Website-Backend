@@ -9,7 +9,7 @@ namespace RecipeSiteBackend.Models;
 public class User
 {
     [Key]
-    public string? UUID { get; set; }
+    public Guid UUID { get; set; }
 
     [Required]
     [MaxLength(64)]

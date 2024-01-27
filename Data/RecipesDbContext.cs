@@ -20,4 +20,8 @@ public class RecipesDbContext : DbContext
     public DbSet<Permitted_User> Policies => Set<Permitted_User>();
     public DbSet<Rating> Ratings => Set<Rating>();
     public DbSet<Tag> Tags => Set<Tag>();
+    public DbSet<Instruction> Instructions => Set<Instruction>();
+    public DbSet<Instruction_Image> Instruction_Images => Set<Instruction_Image>();
+    public DbSet<Instruction_Video> Instruction_Videos => Set<Instruction_Video>();
+    public DbSet<Note> Notes => Set<Note>();
 }

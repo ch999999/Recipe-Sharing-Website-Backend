@@ -23,12 +23,12 @@ public class UserService
         _configuration = configuration;
     }
 
-    public async Task<User?> GetByUUID(string uuid)
-    {
-        return await _context.Users
-            .AsNoTracking()
-            .SingleOrDefaultAsync(u=>u.UUID == uuid);
-    }
+    //public async Task<User?> GetByUUID(string uuid)
+    //{
+    //    return await _context.Users
+    //        .AsNoTracking()
+    //        .SingleOrDefaultAsync(u=>u.UUID.ToString() == uuid);
+    //}
 
     public async Task<User?> GetByEmail(string email)
     {
@@ -51,19 +51,19 @@ public class UserService
         newUser.Password = hashPassword;
 
         //generate uuid for user
-        var uuidExists = true;
-        string newUUID = Guid.NewGuid().ToString();
-        while (uuidExists)
-        {
-            var uuid = Guid.NewGuid().ToString();
-            if (await GetByUUID(uuid) == null)
-            {
-                newUUID = uuid;
-                uuidExists = false;
-            }
-        }
+        //var uuidExists = true;
+        //string newUUID = Guid.NewGuid().ToString();
+        //while (uuidExists)
+        //{
+        //    var uuid = Guid.NewGuid().ToString();
+        //    if (await GetByUUID(uuid) == null)
+        //    {
+        //        newUUID = uuid;
+        //        uuidExists = false;
+        //    }
+        //}
 
-        newUser.UUID = newUUID;        
+        //newUser.UUID = newUUID;        
         newUser.CreatedDate = DateTime.Now.ToUniversalTime();
         newUser.LastModifiedDate = DateTime.Now.ToUniversalTime();
 
@@ -71,7 +71,8 @@ public class UserService
         await _context.SaveChangesAsync();
 
         return new User {
-        UUID = newUUID,
+        //UUID = newUUID,
+        UUID=newUser.UUID,
         Username=newUser.Username,
         Firstname = newUser.Firstname,
         Lastname = newUser.Lastname,
@@ -120,7 +121,7 @@ public class UserService
         user.Token = tokenHandler.WriteToken(token);
         return new User 
         {
-            UUID = user.UUID,
+            //UUID = user.UUID,
             Username = user.Username,
             Token = user.Token
         };

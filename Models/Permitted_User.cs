@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace RecipeSiteBackend.Models
 {
@@ -6,8 +7,8 @@ namespace RecipeSiteBackend.Models
     public class Permitted_User
     {
         public string? Permission_Level { get; set; }
-        public string? UserUUID { get; set; }
-        public string? RecipeUUID { get; set; }
+        public Guid UserUUID { get; set; }
+        public Guid RecipeUUID { get; set; }
         public User? User { get; set; }
         public Recipe? Recipe { get; set; }
        

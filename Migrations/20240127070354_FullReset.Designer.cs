@@ -12,8 +12,8 @@ using RecipeSiteBackend.Data;
 namespace RecipeSiteBackend.Migrations
 {
     [DbContext(typeof(RecipesDbContext))]
-    [Migration("20240122084440_Added-Firstname_Lastname_Datecreated_Datemodified-for-Users")]
-    partial class AddedFirstname_Lastname_Datecreated_DatemodifiedforUsers
+    [Migration("20240127070354_FullReset")]
+    partial class FullReset
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,11 +27,9 @@ namespace RecipeSiteBackend.Migrations
 
             modelBuilder.Entity("RecipeSiteBackend.Models.User", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("UUID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
@@ -57,20 +55,14 @@ namespace RecipeSiteBackend.Migrations
                     b.Property<string>("Role")
                         .HasColumnType("text");
 
-                    b.Property<string>("UUID")
-                        .HasColumnType("text");
-
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
-                    b.HasKey("Id");
+                    b.HasKey("UUID");
 
                     b.HasIndex("Email")
-                        .IsUnique();
-
-                    b.HasIndex("UUID")
                         .IsUnique();
 
                     b.HasIndex("Username")

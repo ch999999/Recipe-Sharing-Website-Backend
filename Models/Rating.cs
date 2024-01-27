@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RecipeSiteBackend.Models
@@ -9,8 +10,8 @@ namespace RecipeSiteBackend.Models
         [Column(TypeName ="decimal(2,1)")]
         public decimal Score { get; set; }
         public string? Description { get; set; }
-        public string? UserUUID { get; set; }
-        public string? RecipeUUID { get; set; }
+        public Guid UserUUID { get; set; }
+        public Guid RecipeUUID { get; set; }
         public Recipe? Recipe { get; set; }
         public User? User { get; set; }
     }

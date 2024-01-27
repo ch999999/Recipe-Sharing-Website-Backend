@@ -27,8 +27,8 @@ namespace RecipeSiteBackend.Migrations
                     b.Property<int>("DietsId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("RecipesUUID")
-                        .HasColumnType("text");
+                    b.Property<Guid>("RecipesUUID")
+                        .HasColumnType("uuid");
 
                     b.HasKey("DietsId", "RecipesUUID");
 
@@ -55,29 +55,113 @@ namespace RecipeSiteBackend.Migrations
 
             modelBuilder.Entity("RecipeSiteBackend.Models.Ingredient", b =>
                 {
-                    b.Property<string>("UUID")
-                        .HasColumnType("text");
+                    b.Property<Guid>("RecipeUUID")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Ingredient_Number")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<string>("RecipesUUID")
-                        .HasColumnType("text");
-
-                    b.HasKey("UUID");
-
-                    b.HasIndex("RecipesUUID");
+                    b.HasKey("RecipeUUID", "Ingredient_Number");
 
                     b.ToTable("Ingredients");
                 });
 
-            modelBuilder.Entity("RecipeSiteBackend.Models.Permitted_User", b =>
+            modelBuilder.Entity("RecipeSiteBackend.Models.Instruction", b =>
                 {
-                    b.Property<string>("UserUUID")
+                    b.Property<Guid>("RecipeUUID")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Sequence_Number")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<string>("RecipeUUID")
+                    b.HasKey("RecipeUUID", "Sequence_Number");
+
+                    b.ToTable("Instructions");
+                });
+
+            modelBuilder.Entity("RecipeSiteBackend.Models.Instruction_Image", b =>
+                {
+                    b.Property<Guid>("InstructionUUID")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Image_Number")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Description")
                         .HasColumnType("text");
+
+                    b.Property<Guid?>("InstructionRecipeUUID")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("InstructionSequence_Number")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Url")
+                        .HasColumnType("text");
+
+                    b.HasKey("InstructionUUID", "Image_Number");
+
+                    b.HasIndex("InstructionRecipeUUID", "InstructionSequence_Number");
+
+                    b.ToTable("Instruction_Images");
+                });
+
+            modelBuilder.Entity("RecipeSiteBackend.Models.Instruction_Video", b =>
+                {
+                    b.Property<Guid>("InstructionUUID")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Video_Number")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("InstructionRecipeUUID")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("InstructionSequence_Number")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Url")
+                        .HasColumnType("text");
+
+                    b.HasKey("InstructionUUID", "Video_Number");
+
+                    b.HasIndex("InstructionRecipeUUID", "InstructionSequence_Number");
+
+                    b.ToTable("Instruction_Videos");
+                });
+
+            modelBuilder.Entity("RecipeSiteBackend.Models.Note", b =>
+                {
+                    b.Property<Guid>("RecipeUUID")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Note_Number")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.HasKey("RecipeUUID", "Note_Number");
+
+                    b.ToTable("Notes");
+                });
+
+            modelBuilder.Entity("RecipeSiteBackend.Models.Permitted_User", b =>
+                {
+                    b.Property<Guid>("UserUUID")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RecipeUUID")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Permission_Level")
                         .HasColumnType("text");
@@ -91,11 +175,11 @@ namespace RecipeSiteBackend.Migrations
 
             modelBuilder.Entity("RecipeSiteBackend.Models.Rating", b =>
                 {
-                    b.Property<string>("UserUUID")
-                        .HasColumnType("text");
+                    b.Property<Guid>("UserUUID")
+                        .HasColumnType("uuid");
 
-                    b.Property<string>("RecipeUUID")
-                        .HasColumnType("text");
+                    b.Property<Guid>("RecipeUUID")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -112,8 +196,9 @@ namespace RecipeSiteBackend.Migrations
 
             modelBuilder.Entity("RecipeSiteBackend.Models.Recipe", b =>
                 {
-                    b.Property<string>("UUID")
-                        .HasColumnType("text");
+                    b.Property<Guid>("UUID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Cook_Time_Mins")
                         .HasColumnType("integer");
@@ -139,8 +224,8 @@ namespace RecipeSiteBackend.Migrations
                     b.Property<string>("Meal_Type")
                         .HasColumnType("text");
 
-                    b.Property<string>("OwnerUUID")
-                        .HasColumnType("text");
+                    b.Property<Guid?>("OwnerUUID")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Prep_Time_Mins")
                         .HasColumnType("integer");
@@ -163,42 +248,38 @@ namespace RecipeSiteBackend.Migrations
 
             modelBuilder.Entity("RecipeSiteBackend.Models.Recipe_Image", b =>
                 {
-                    b.Property<string>("UUID")
-                        .HasColumnType("text");
+                    b.Property<Guid>("RecipeUUID")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Image_Number")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<string>("RecipeUUID")
                         .HasColumnType("text");
 
                     b.Property<string>("Url")
                         .HasColumnType("text");
 
-                    b.HasKey("UUID");
-
-                    b.HasIndex("RecipeUUID");
+                    b.HasKey("RecipeUUID", "Image_Number");
 
                     b.ToTable("Recipe_Images");
                 });
 
             modelBuilder.Entity("RecipeSiteBackend.Models.Recipe_Video", b =>
                 {
-                    b.Property<string>("UUID")
-                        .HasColumnType("text");
+                    b.Property<Guid>("RecipeUUID")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Video_Number")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<string>("RecipeUUID")
                         .HasColumnType("text");
 
                     b.Property<string>("Url")
                         .HasColumnType("text");
 
-                    b.HasKey("UUID");
-
-                    b.HasIndex("RecipeUUID");
+                    b.HasKey("RecipeUUID", "Video_Number");
 
                     b.ToTable("Recipe_Videos");
                 });
@@ -221,8 +302,9 @@ namespace RecipeSiteBackend.Migrations
 
             modelBuilder.Entity("RecipeSiteBackend.Models.User", b =>
                 {
-                    b.Property<string>("UUID")
-                        .HasColumnType("text");
+                    b.Property<Guid>("UUID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
@@ -266,8 +348,8 @@ namespace RecipeSiteBackend.Migrations
 
             modelBuilder.Entity("RecipeTag", b =>
                 {
-                    b.Property<string>("RecipesUUID")
-                        .HasColumnType("text");
+                    b.Property<Guid>("RecipesUUID")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("TagsId")
                         .HasColumnType("integer");
@@ -298,9 +380,51 @@ namespace RecipeSiteBackend.Migrations
                 {
                     b.HasOne("RecipeSiteBackend.Models.Recipe", "Recipes")
                         .WithMany("Ingredients")
-                        .HasForeignKey("RecipesUUID");
+                        .HasForeignKey("RecipeUUID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Recipes");
+                });
+
+            modelBuilder.Entity("RecipeSiteBackend.Models.Instruction", b =>
+                {
+                    b.HasOne("RecipeSiteBackend.Models.Recipe", "Recipe")
+                        .WithMany("Instructions")
+                        .HasForeignKey("RecipeUUID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Recipe");
+                });
+
+            modelBuilder.Entity("RecipeSiteBackend.Models.Instruction_Image", b =>
+                {
+                    b.HasOne("RecipeSiteBackend.Models.Instruction", "Instruction")
+                        .WithMany("Images")
+                        .HasForeignKey("InstructionRecipeUUID", "InstructionSequence_Number");
+
+                    b.Navigation("Instruction");
+                });
+
+            modelBuilder.Entity("RecipeSiteBackend.Models.Instruction_Video", b =>
+                {
+                    b.HasOne("RecipeSiteBackend.Models.Instruction", "Instruction")
+                        .WithMany("Videos")
+                        .HasForeignKey("InstructionRecipeUUID", "InstructionSequence_Number");
+
+                    b.Navigation("Instruction");
+                });
+
+            modelBuilder.Entity("RecipeSiteBackend.Models.Note", b =>
+                {
+                    b.HasOne("RecipeSiteBackend.Models.Recipe", "Recipe")
+                        .WithMany("Notes")
+                        .HasForeignKey("RecipeUUID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Recipe");
                 });
 
             modelBuilder.Entity("RecipeSiteBackend.Models.Permitted_User", b =>
@@ -354,7 +478,9 @@ namespace RecipeSiteBackend.Migrations
                 {
                     b.HasOne("RecipeSiteBackend.Models.Recipe", "Recipe")
                         .WithMany("Images")
-                        .HasForeignKey("RecipeUUID");
+                        .HasForeignKey("RecipeUUID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Recipe");
                 });
@@ -363,7 +489,9 @@ namespace RecipeSiteBackend.Migrations
                 {
                     b.HasOne("RecipeSiteBackend.Models.Recipe", "Recipe")
                         .WithMany("Videos")
-                        .HasForeignKey("RecipeUUID");
+                        .HasForeignKey("RecipeUUID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Recipe");
                 });
@@ -383,11 +511,22 @@ namespace RecipeSiteBackend.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("RecipeSiteBackend.Models.Instruction", b =>
+                {
+                    b.Navigation("Images");
+
+                    b.Navigation("Videos");
+                });
+
             modelBuilder.Entity("RecipeSiteBackend.Models.Recipe", b =>
                 {
                     b.Navigation("Images");
 
                     b.Navigation("Ingredients");
+
+                    b.Navigation("Instructions");
+
+                    b.Navigation("Notes");
 
                     b.Navigation("Policies");
 
