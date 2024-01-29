@@ -3,9 +3,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RecipeSiteBackend.Models
 {
-    [PrimaryKey(nameof(InstructionUUID),nameof(Image_Number))]
+    [Index(nameof(InstructionUUID),nameof(Image_Number), IsUnique = true)]
     public class Instruction_Image
     {
+        [Key]       
+        public Guid UUID { get; set; }
         public int Image_Number { get; set; }
         public string? Url { get; set; }
         public Guid InstructionUUID { get; set; }

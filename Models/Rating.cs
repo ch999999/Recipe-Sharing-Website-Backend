@@ -4,9 +4,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RecipeSiteBackend.Models
 {
-    [PrimaryKey(nameof(UserUUID), nameof(RecipeUUID))]
+    [Index(nameof(RecipeUUID), nameof(UserUUID), IsUnique = true)]
     public class Rating
     {
+        [Key]
+        public Guid UUID { get; set; }
         [Column(TypeName ="decimal(2,1)")]
         public decimal Score { get; set; }
         public string? Description { get; set; }

@@ -1,7 +1,9 @@
-﻿using System.Text.Json.Serialization;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 namespace RecipeSiteBackend.Models
 {
+    [Index(nameof(Tag_Name), IsUnique = true)]
     public class Tag
     {
         public int Id { get; set; }

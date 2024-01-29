@@ -46,6 +46,7 @@ namespace RecipeSiteBackend.Controllers
         public async Task<IActionResult> Login(LoginUser loginUser)
         {
             
+
             if (string.IsNullOrEmpty(loginUser.Identifier))
             {
                 return BadRequest(new ValidationError

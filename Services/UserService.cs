@@ -23,12 +23,12 @@ public class UserService
         _configuration = configuration;
     }
 
-    //public async Task<User?> GetByUUID(string uuid)
-    //{
-    //    return await _context.Users
-    //        .AsNoTracking()
-    //        .SingleOrDefaultAsync(u=>u.UUID.ToString() == uuid);
-    //}
+    public async Task<User?> GetByUUID(Guid uuid)
+    {
+        return await _context.Users
+            .AsNoTracking()
+            .SingleOrDefaultAsync(u => u.UUID == uuid);
+    }
 
     public async Task<User?> GetByEmail(string email)
     {
@@ -46,6 +46,14 @@ public class UserService
 
     public async Task<User?> CreateUser(User newUser)
     {
+        newUser.Recipes = null;
+        newUser.Policies = null;
+        newUser.Ratings = null;
+        newUser.UUID = Guid.Empty;
+        if (string.IsNullOrEmpty(newUser.Lastname))
+        {
+            newUser.Lastname = null;
+        }
         var plainPassword = newUser.Password;
         var hashPassword = BCrypt.Net.BCrypt.HashPassword(plainPassword);
         newUser.Password = hashPassword;

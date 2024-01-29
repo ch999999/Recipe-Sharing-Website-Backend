@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using RecipeSiteBackend.Data;
@@ -11,9 +12,11 @@ using RecipeSiteBackend.Data;
 namespace RecipeSiteBackend.Migrations
 {
     [DbContext(typeof(RecipesDbContext))]
-    partial class RecipesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240129141849_addUniqueCompositeKey")]
+    partial class addUniqueCompositeKey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -92,8 +95,7 @@ namespace RecipeSiteBackend.Migrations
 
                     b.HasKey("UUID");
 
-                    b.HasIndex("RecipeUUID", "Ingredient_Number")
-                        .IsUnique();
+                    b.HasIndex("RecipeUUID");
 
                     b.ToTable("Ingredients");
                 });
@@ -115,8 +117,7 @@ namespace RecipeSiteBackend.Migrations
 
                     b.HasKey("UUID");
 
-                    b.HasIndex("RecipeUUID", "Sequence_Number")
-                        .IsUnique();
+                    b.HasIndex("RecipeUUID");
 
                     b.ToTable("Instructions");
                 });
@@ -141,7 +142,9 @@ namespace RecipeSiteBackend.Migrations
 
                     b.HasKey("UUID");
 
-                    b.HasIndex("InstructionUUID", "Image_Number")
+                    b.HasIndex("InstructionUUID");
+
+                    b.HasIndex("UUID", "Image_Number")
                         .IsUnique();
 
                     b.ToTable("Instruction_Images");
@@ -167,8 +170,7 @@ namespace RecipeSiteBackend.Migrations
 
                     b.HasKey("UUID");
 
-                    b.HasIndex("InstructionUUID", "Video_Number")
-                        .IsUnique();
+                    b.HasIndex("InstructionUUID");
 
                     b.ToTable("Instruction_Videos");
                 });
@@ -190,8 +192,7 @@ namespace RecipeSiteBackend.Migrations
 
                     b.HasKey("UUID");
 
-                    b.HasIndex("RecipeUUID", "Note_Number")
-                        .IsUnique();
+                    b.HasIndex("RecipeUUID");
 
                     b.ToTable("Notes");
                 });
@@ -213,10 +214,9 @@ namespace RecipeSiteBackend.Migrations
 
                     b.HasKey("UUID");
 
-                    b.HasIndex("UserUUID");
+                    b.HasIndex("RecipeUUID");
 
-                    b.HasIndex("RecipeUUID", "UserUUID")
-                        .IsUnique();
+                    b.HasIndex("UserUUID");
 
                     b.ToTable("Policies");
                 });
@@ -241,10 +241,9 @@ namespace RecipeSiteBackend.Migrations
 
                     b.HasKey("UUID");
 
-                    b.HasIndex("UserUUID");
+                    b.HasIndex("RecipeUUID");
 
-                    b.HasIndex("RecipeUUID", "UserUUID")
-                        .IsUnique();
+                    b.HasIndex("UserUUID");
 
                     b.ToTable("Ratings");
                 });
@@ -323,8 +322,7 @@ namespace RecipeSiteBackend.Migrations
 
                     b.HasKey("UUID");
 
-                    b.HasIndex("RecipeUUID", "Image_Number")
-                        .IsUnique();
+                    b.HasIndex("RecipeUUID");
 
                     b.ToTable("Recipe_Images");
                 });
@@ -349,8 +347,7 @@ namespace RecipeSiteBackend.Migrations
 
                     b.HasKey("UUID");
 
-                    b.HasIndex("RecipeUUID", "Video_Number")
-                        .IsUnique();
+                    b.HasIndex("RecipeUUID");
 
                     b.ToTable("Recipe_Videos");
                 });
