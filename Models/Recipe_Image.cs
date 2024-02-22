@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Buffers.Text;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RecipeSiteBackend.Models
 {
@@ -13,5 +15,6 @@ namespace RecipeSiteBackend.Models
         public Guid RecipeUUID { get; set; }
         public Recipe? Recipe { get; set; }
         public string? Description {  get; set; }
+        
     }
 }

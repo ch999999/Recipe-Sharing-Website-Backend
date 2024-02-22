@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RecipeSiteBackend.Models
 {
@@ -13,5 +14,8 @@ namespace RecipeSiteBackend.Models
         public Guid InstructionUUID { get; set; }
         public Instruction? Instruction { get; set; }
         public string? Description { get; set; }
+        [NotMapped]
+        public Base64StringAttribute? imageBase64 { get; set; }
+
     }
 }

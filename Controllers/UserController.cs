@@ -103,9 +103,29 @@ namespace RecipeSiteBackend.Controllers
             //{
             //    return Unauthorized(new { Error = "Invalid or expired access token." });
             //}
+
+            //Code for extracting claims
+            //string token = Request.Headers["Authorization"];
+
+            //if (token.StartsWith("Bearer"))
+            //{
+            //    token = token.Substring("Bearer ".Length).Trim();
+            //}
+            //var handler = new JwtSecurityTokenHandler();
+
+            //JwtSecurityToken jwt = handler.ReadJwtToken(token);
+
+            //var claims = new Dictionary<string, string>();
+
+            //foreach (var claim in jwt.Claims)
+            //{
+            //    claims.Add(claim.Type, claim.Value);
+            //}
+            //return Ok(claims);
+
+            //Test if token is valid only
             return Ok();
-            
-            
+                   
         }
 
         [EnableCors]

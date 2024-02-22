@@ -23,6 +23,36 @@ public class UserService
         _configuration = configuration;
     }
 
+    public async Task<Guid> getUUIDFromToken(string token)
+    {
+        Guid uuid = Guid.Empty;
+        if (token.StartsWith("Bearer"))
+        {
+            token = token.Substring("Bearer ".Length).Trim();
+        }
+        var handler = new JwtSecurityTokenHandler();
+
+        JwtSecurityToken jwt = handler.ReadJwtToken(token);
+
+        var claims = new Dictionary<string, string>();
+
+        foreach (var claim in jwt.Claims)
+        {
+            claims.Add(claim.Type, claim.Value);
+        }
+
+        string username = claims["unique_name"];
+        if(username != null)
+        {
+            var user = await GetByUsername(username);
+            if(user != null)
+            {
+                return user.UUID;
+            }
+        }
+        return uuid;
+    }
+
     public async Task<User?> GetByUUID(Guid uuid)
     {
         return await _context.Users
@@ -129,7 +159,6 @@ public class UserService
         user.Token = tokenHandler.WriteToken(token);
         return new User 
         {
-            //UUID = user.UUID,
             Username = user.Username,
             Token = user.Token
         };

@@ -1,6 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Amazon.Runtime;
+using Amazon.S3;
+using Amazon.S3.Transfer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using RecipeSiteBackend.Data;
 using RecipeSiteBackend.Models;
+using System.Drawing;
+using System.IO;
+
 
 namespace RecipeSiteBackend.Services
 {
@@ -15,14 +22,76 @@ namespace RecipeSiteBackend.Services
             _configuration = configuration;
         }
 
-        //public async Task<Recipe>? GetByUUID(Guid uuid)
-        //{
-        //    return await _context.Recipes
-        //        .Include(r => r.Tags)
-        //        .Include(r => r.Diets)
-        //        .AsNoTracking()
-        //        .SingleOrDefaultAsync(r => r.UUID == uuid);
-        //}
+        public async Task<Recipe>? GetByUUID(Guid uuid)
+        {
+            try
+            {
+                return await _context.Recipes.AsNoTracking().SingleOrDefaultAsync(r => r.UUID == uuid);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public async Task<Description_Media> UploadDescriptionMedia(Description_Media media)
+        {
+            var imgBase64 = media.ImageBase64;
+
+            byte[] imgBytes = Convert.FromBase64String(imgBase64);
+            var randomFileName = Guid.NewGuid().ToString();
+            var imgName = randomFileName + media.FileExtension;
+            var imgPath = "./Temp/" + imgName;
+            File.WriteAllBytes(imgPath, imgBytes);
+            string imgUrl = string.Empty;
+            
+            try
+            {
+                BasicAWSCredentials creds = new BasicAWSCredentials(_configuration["AWS:ACCESS_KEY"], _configuration["AWS:SECRET_KEY"]);
+                var fileTransferUtility = new TransferUtility(new AmazonS3Client(creds,Amazon.RegionEndpoint.APSoutheast1));
+                var filePath = imgPath;
+                var bucketName = _configuration["AWS:AWS_BUCKET"];
+                var keyName = imgName;
+                fileTransferUtility.Upload(filePath, bucketName, keyName);
+                imgUrl = "https://" + bucketName + ".s3." + _configuration["AWS:AWS_REGION"] + ".amazonaws.com/" + keyName;
+
+                media.Url = imgUrl;
+                await _context.Description_Medias.AddAsync(media);
+                await _context.SaveChangesAsync();
+            }catch (Exception ex)
+            {
+                Console.WriteLine("S3 Error: "+ex.Message);
+            }
+            finally
+            {
+                if (File.Exists(imgPath))
+                {
+                    File.Delete(imgPath);
+                }
+            }
+            media.ImageBase64 = null;
+            return media;
+        }
+
+        public async Task<IEnumerable<Difficulty>> GetDifficulties()
+        {
+            return await _context.Difficulties.AsNoTracking().ToListAsync();
+        }
+
+        public async Task<IEnumerable<Cuisine>> GetCuisines()
+        {
+            return await _context.Cuisines.AsNoTracking().ToListAsync();
+        }
+
+        public async Task<IEnumerable<Diet>> GetDiets()
+        {
+            return await _context.Diets.AsNoTracking().ToListAsync();
+        }
+
+        public async Task<IEnumerable<Tag>> GetTags()
+        {
+            return await _context.Tags.AsNoTracking().ToListAsync();
+        }
 
         public async Task<Recipe> CreateRecipe(Recipe recipe)
         {
@@ -30,6 +99,18 @@ namespace RecipeSiteBackend.Services
             recipe.Owner = null;
             recipe.Ratings = null;
             recipe.Cuisine = null;
+            recipe.Meal_Type = null;
+            recipe.Source = null;
+            recipe.Difficulty = null;
+            var ownerPolicy = new Permitted_User()
+            {
+                Permission_Level = "owner",
+                UserUUID = recipe.OwnerUUID
+            };
+            recipe.Policies = [];
+            recipe.Policies.Add(ownerPolicy);
+            recipe.CreatedDate = DateTime.Now.ToUniversalTime();
+            recipe.LastModifiedDate = DateTime.Now.ToUniversalTime();
 
             List<Diet>? dietList = recipe.Diets?.ToList();
             List<Tag>? tagList = recipe.Tags?.ToList();
@@ -81,6 +162,7 @@ namespace RecipeSiteBackend.Services
             return new Recipe
             {
                 Title = recipe.Title,
+                UUID = recipe.UUID
             };
         }
 

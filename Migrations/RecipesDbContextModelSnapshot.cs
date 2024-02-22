@@ -53,7 +53,32 @@ namespace RecipeSiteBackend.Migrations
                     b.HasIndex("Cuisine_Name")
                         .IsUnique();
 
-                    b.ToTable("Cuisine");
+                    b.ToTable("Cuisines");
+                });
+
+            modelBuilder.Entity("RecipeSiteBackend.Models.Description_Media", b =>
+                {
+                    b.Property<Guid>("UUID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Filetype")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("RecipeUUID")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Url")
+                        .HasColumnType("text");
+
+                    b.HasKey("UUID");
+
+                    b.HasIndex("RecipeUUID");
+
+                    b.ToTable("Description_Medias");
                 });
 
             modelBuilder.Entity("RecipeSiteBackend.Models.Diet", b =>
@@ -73,6 +98,25 @@ namespace RecipeSiteBackend.Migrations
                         .IsUnique();
 
                     b.ToTable("Diets");
+                });
+
+            modelBuilder.Entity("RecipeSiteBackend.Models.Difficulty", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Difficulty_Name")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Difficulty_Name")
+                        .IsUnique();
+
+                    b.ToTable("Difficulties");
                 });
 
             modelBuilder.Entity("RecipeSiteBackend.Models.Ingredient", b =>
@@ -267,8 +311,8 @@ namespace RecipeSiteBackend.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<string>("Difficulty")
-                        .HasColumnType("text");
+                    b.Property<int>("DifficultyId")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsViewableByPublic")
                         .HasColumnType("boolean");
@@ -297,6 +341,8 @@ namespace RecipeSiteBackend.Migrations
                     b.HasKey("UUID");
 
                     b.HasIndex("CuisineId");
+
+                    b.HasIndex("DifficultyId");
 
                     b.HasIndex("OwnerUUID");
 
@@ -450,6 +496,17 @@ namespace RecipeSiteBackend.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("RecipeSiteBackend.Models.Description_Media", b =>
+                {
+                    b.HasOne("RecipeSiteBackend.Models.Recipe", "Recipe")
+                        .WithMany()
+                        .HasForeignKey("RecipeUUID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Recipe");
+                });
+
             modelBuilder.Entity("RecipeSiteBackend.Models.Ingredient", b =>
                 {
                     b.HasOne("RecipeSiteBackend.Models.Recipe", "Recipes")
@@ -551,6 +608,12 @@ namespace RecipeSiteBackend.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("RecipeSiteBackend.Models.Difficulty", "Difficulty")
+                        .WithMany()
+                        .HasForeignKey("DifficultyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("RecipeSiteBackend.Models.User", "Owner")
                         .WithMany("Recipes")
                         .HasForeignKey("OwnerUUID")
@@ -558,6 +621,8 @@ namespace RecipeSiteBackend.Migrations
                         .IsRequired();
 
                     b.Navigation("Cuisine");
+
+                    b.Navigation("Difficulty");
 
                     b.Navigation("Owner");
                 });

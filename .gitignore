@@ -226,5 +226,8 @@ AppPackages/
 #####
 *.env*
 db*
+appsettings.*
 appsettings.Development.json
 appsettings.json
+appsettings.Development*
+

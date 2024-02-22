@@ -9,7 +9,6 @@ namespace RecipeSiteBackend.Models
         public Guid UUID { get; set; }
         public string? Title { get; set; }
         public string? Description { get; set; }
-        public string? Difficulty { get; set; }
         public int Prep_Time_Mins { get; set; }
         public int Cook_Time_Mins { get; set; }
         public int Servings { get; set; }
@@ -22,6 +21,8 @@ namespace RecipeSiteBackend.Models
         public bool IsViewableByPublic { get; set; }
         public int CuisineId { get; set; }
         public Cuisine? Cuisine { get; set; }
+        public int DifficultyId { get; set; }
+        public Difficulty? Difficulty { get; set; }
        
         public ICollection<Tag>? Tags { get; set; }
         public ICollection<Diet>? Diets { get; set; }
