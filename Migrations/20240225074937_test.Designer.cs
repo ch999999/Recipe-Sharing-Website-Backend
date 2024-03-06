@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using RecipeSiteBackend.Data;
@@ -11,9 +12,11 @@ using RecipeSiteBackend.Data;
 namespace RecipeSiteBackend.Migrations
 {
     [DbContext(typeof(RecipesDbContext))]
-    partial class RecipesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240225074937_test")]
+    partial class test
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -65,9 +68,6 @@ namespace RecipeSiteBackend.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<string>("Filename")
-                        .HasColumnType("text");
-
                     b.Property<string>("Filetype")
                         .HasColumnType("text");
 
@@ -79,7 +79,8 @@ namespace RecipeSiteBackend.Migrations
 
                     b.HasKey("UUID");
 
-                    b.HasIndex("RecipeUUID");
+                    b.HasIndex("RecipeUUID")
+                        .IsUnique();
 
                     b.ToTable("Description_Medias");
                 });
@@ -175,9 +176,6 @@ namespace RecipeSiteBackend.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Filename")
                         .HasColumnType("text");
 
                     b.Property<int>("Image_Number")
@@ -316,6 +314,9 @@ namespace RecipeSiteBackend.Migrations
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
+
+                    b.Property<Guid>("DescriptionMediaUUID")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("DifficultyId")
                         .HasColumnType("integer");
@@ -504,13 +505,11 @@ namespace RecipeSiteBackend.Migrations
 
             modelBuilder.Entity("RecipeSiteBackend.Models.Description_Media", b =>
                 {
-                    b.HasOne("RecipeSiteBackend.Models.Recipe", "Recipe")
-                        .WithMany()
-                        .HasForeignKey("RecipeUUID")
+                    b.HasOne("RecipeSiteBackend.Models.Recipe", null)
+                        .WithOne("Description_Media")
+                        .HasForeignKey("RecipeSiteBackend.Models.Description_Media", "RecipeUUID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Recipe");
                 });
 
             modelBuilder.Entity("RecipeSiteBackend.Models.Ingredient", b =>
@@ -679,6 +678,8 @@ namespace RecipeSiteBackend.Migrations
 
             modelBuilder.Entity("RecipeSiteBackend.Models.Recipe", b =>
                 {
+                    b.Navigation("Description_Media");
+
                     b.Navigation("Images");
 
                     b.Navigation("Ingredients");

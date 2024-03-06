@@ -19,6 +19,7 @@ namespace RecipeSiteBackend.Models
         public DateTime CreatedDate { get; set; }
         public DateTime LastModifiedDate { get; set; }
         public bool IsViewableByPublic { get; set; }
+
         public int CuisineId { get; set; }
         public Cuisine? Cuisine { get; set; }
         public int DifficultyId { get; set; }

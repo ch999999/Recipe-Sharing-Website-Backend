@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace RecipeSiteBackend.Models
 {
@@ -11,6 +12,7 @@ namespace RecipeSiteBackend.Models
         public int Note_Number { get; set; }
         public string? Description { get; set; }
         public Guid RecipeUUID { get; set; }
+        [JsonIgnore]
         public Recipe? Recipe { get; set; }
     }
 }
