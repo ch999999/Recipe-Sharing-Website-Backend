@@ -78,7 +78,7 @@ public class UserService
     {
         newUser.Recipes = null;
         newUser.Policies = null;
-        newUser.Ratings = null;
+        //newUser.Ratings = null;
         newUser.UUID = Guid.Empty;
         if (string.IsNullOrEmpty(newUser.Lastname))
         {
@@ -116,6 +116,26 @@ public class UserService
         Lastname = newUser.Lastname,
         Email=newUser.Email
         };
+    }
+
+    public async Task<User> IsValidUser(string identifier, string password)
+    {
+        User? user;
+        if (UserValidator.emailIsValid(identifier))
+        {
+            user = await GetByEmail(identifier);
+        }
+        else
+        {
+            user = await GetByUsername(identifier);
+        }
+
+        if (user is null || !BCrypt.Net.BCrypt.Verify(password, user.Password))
+        {
+            return null;
+        }
+        user.Password = string.Empty;
+        return user;
     }
 
     public async Task<User?> Login(string identifier, string password)
@@ -163,6 +183,96 @@ public class UserService
             Token = user.Token
         };
     }
+
+    public UserRefreshToken AddUserRefreshTokens(UserRefreshToken refreshToken)
+    {
+        _context.UserRefreshTokens.Add(refreshToken);
+        _context.SaveChanges();
+        return refreshToken;
+    }
+
+    public void DeleteUserRefreshTokens(Guid userUUID, string refreshToken)
+    {
+        var item = _context.UserRefreshTokens.FirstOrDefault(x => x.UserUUID == userUUID && x.RefreshToken == refreshToken);
+        if (item != null)
+        {
+            _context.UserRefreshTokens.Remove(item);
+        }
+    }
+
+    public void SaveChanges()
+    {
+        _context.SaveChanges();
+    }
+
+    public UserRefreshToken GetSavedRefreshTokens( Guid userUUID, string refreshToken)
+    {
+        var token = _context.UserRefreshTokens.FirstOrDefault(x => x.UserUUID == userUUID && x.RefreshToken == refreshToken);
+        
+        if(token == null)
+        {
+            return null;
+        }
+
+        if(token.ValidUntil >  DateTime.UtcNow)
+        {
+            return token;
+        }
+        else
+        {
+            _context.UserRefreshTokens.Remove(token);
+            return null;
+        }
+
+    }
+
+    public async Task<User?> Login2(string identifier, string password)
+    {
+        User? user;
+        if (UserValidator.emailIsValid(identifier))
+        {
+            user = await GetByEmail(identifier);
+        }
+        else
+        {
+            user = await GetByUsername(identifier);
+        }
+
+        if (user is null || !BCrypt.Net.BCrypt.Verify(password, user.Password))
+        {
+            return null;
+        }
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.ASCII.GetBytes(_configuration["JWT:SecretKey"]);
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(new Claim[]
+            {
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.GivenName, user.Firstname),
+                new Claim(ClaimTypes.Role, user.Role)
+                //other claims
+            }),
+            IssuedAt = DateTime.UtcNow,
+            Issuer = _configuration["JWT:Issuer"],
+            Audience = _configuration["JWT:Audience"],
+            Expires = DateTime.UtcNow.AddMinutes(90),
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+
+        };
+
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        user.Token = tokenHandler.WriteToken(token);
+        return new User
+        {
+            Username = user.Username,
+            Token = user.Token
+        };
+    }
+
+
 
 }
 

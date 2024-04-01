@@ -229,7 +229,7 @@ namespace RecipeSiteBackend.Validation
                 return false;
             }
             var trimmed = description.Replace(" ", "");
-            if(trimmed.Length<12|| description.Length > 250)
+            if(trimmed.Length<5|| description.Length > 3000)
             {
                 return false;
             }

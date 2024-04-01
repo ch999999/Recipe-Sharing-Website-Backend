@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
+using RecipeSiteBackend.Auth;
 using RecipeSiteBackend.Models;
 using RecipeSiteBackend.Services;
 using RecipeSiteBackend.Validation;
@@ -17,11 +18,13 @@ namespace RecipeSiteBackend.Controllers
     {
         private readonly UserService _service;
         private readonly IConfiguration _configuration;
+        private readonly IJWTManager _jwtManager;
 
-        public UserController(UserService service, IConfiguration config)
+        public UserController(UserService service, IConfiguration config, IJWTManager jwtManager)
         {
             _service = service;
             _configuration = config;
+            _jwtManager = jwtManager;
         }
 
         //[HttpGet("{id}")]
@@ -165,6 +168,123 @@ namespace RecipeSiteBackend.Controllers
             return Ok(user);
             
         }
+
+        //[HttpPost]
+        //[Route("/api/user/authenticate")]
+        //public async Task<IActionResult> Authenticate(LoginUser loginUser)
+        //{
+        //    var validUser = await _service.IsValidUser(loginUser.Identifier, loginUser.Password);
+        //    if (validUser == null)
+        //    {
+        //        return Unauthorized("Invalid username ot password");
+
+        //    }
+        //    var token = _jwtManager.GenerateToken(loginUser.Identifier);
+        //    if (token == null)
+        //    {
+        //        return Unauthorized("Invalid Attempt");
+
+        //    }
+        //    UserRefreshToken obj = new UserRefreshToken
+        //    {
+        //        RefreshToken = token.RefreshToken,
+        //        UserName = loginUser.Identifier
+        //    };
+
+        //    _service.AddUserRefreshTokens(obj);
+        //    return Ok(token);
+        //}
+
+        [HttpPost]
+        [Route("/api/user/auth-refresh")]
+        public async Task<IActionResult> Refresh(Tokens token)
+        {
+            var principal = _jwtManager.GetPrincipalFromExpiredToken(token.AccessToken);
+            var username = principal.Identity?.Name;
+            var user = await _service.GetByUsername(username);
+            if (user == null)
+            {
+                return Unauthorized(new {error="invalid user"}); //force user to relog
+            }
+            var savedRefreshToken = _service.GetSavedRefreshTokens(user.UUID, token.RefreshToken);
+            if (savedRefreshToken == null)
+            {
+                return Unauthorized(new {error="invalid token"}); //force user to relog
+            }
+            var newJwtToken = _jwtManager.GenerateToken(username, user.Firstname);
+            if (newJwtToken == null)
+            {
+                return Unauthorized(new {error="invalid token"}); //force user to relog
+            }
+            UserRefreshToken obj = new UserRefreshToken
+            {
+                RefreshToken = newJwtToken.RefreshToken,
+                UserUUID = user.UUID,
+            };
+            _service.DeleteUserRefreshTokens(user.UUID, token.RefreshToken);
+            _service.AddUserRefreshTokens(obj);
+            return Ok(newJwtToken);
+        }
+
+        [HttpPost]
+        [Route("/api/User/logout")]
+        public async Task<IActionResult> Logout(Tokens token)
+        {
+            var principal = _jwtManager.GetPrincipalFromExpiredToken(token.AccessToken);
+            var username = principal.Identity?.Name;
+            var user = await _service.GetByUsername(username);
+            if (user == null)
+            {
+                return Unauthorized(new { error = "invalid user" }); //force user to relog
+            }
+            _service.DeleteUserRefreshTokens(user.UUID, token.RefreshToken);
+            _service.SaveChanges();
+            return Ok(new {message= "Logout successful" });
+        }
+
+        [HttpPost]
+        [Route("/api/User/login2")]
+        public async Task<IActionResult> Login2(LoginUser loginUser)
+        {
+            if (string.IsNullOrEmpty(loginUser.Identifier))
+            {
+                return BadRequest(new ValidationError
+                {
+                    ErrorField = "identifier",
+                    Message = "Username/email cannot be empty"
+                });
+            }else if (string.IsNullOrEmpty(loginUser.Password))
+            {
+                return BadRequest(new ValidationError
+                {
+                    ErrorField = "password",
+                    Message = "Password cannot be empty"
+                });
+            }
+
+            User loggedInUser = await _service.IsValidUser(loginUser.Identifier, loginUser.Password);
+            if (loggedInUser == null)
+            {
+                return BadRequest(new { ErrorField = "password", Message = "Invalid Username/Email or Password." });
+            }
+
+            var token = _jwtManager.GenerateToken(loggedInUser.Username, loggedInUser.Firstname);
+            if (token == null)
+            {
+                return Unauthorized(new { ErrorField = "password", Message = "Unknown error occurred. Try again." });
+            }
+            UserRefreshToken obj = new UserRefreshToken
+            {
+                RefreshToken = token.RefreshToken,
+                UserUUID = loggedInUser.UUID
+            };
+
+            _service.AddUserRefreshTokens(obj);
+            return Ok(token);
+
+        }
+
+
     }
 }
 

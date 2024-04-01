@@ -41,11 +41,11 @@ namespace RecipeSiteBackend.Controllers
             var recipeToUpdate = await _recipeService.GetByUUID(newRecipe.UUID);
             if(recipeToUpdate == null)
             {
-                return BadRequest();
+                return NotFound();
             }
             if (recipeToUpdate.OwnerUUID != ownerUUID)
             {
-                return NotFound();
+                return Unauthorized();
             }
 
             foreach(Instruction instruction in newRecipe.Instructions)
@@ -66,7 +66,39 @@ namespace RecipeSiteBackend.Controllers
                 }
             }
             var updatedRecipe = await _recipeService.UpdateRecipe(newRecipe);
+            if (updatedRecipe == null)
+            {
+                return BadRequest();
+            }
             return Ok(updatedRecipe);
+        }
+
+        [Authorize]
+        [HttpDelete("/api/Recipe/Delete/{UUID}")]
+        public async Task<IActionResult> DeleteRecipe(Guid UUID)
+        {
+            string token = Request.Headers["Authorization"];
+            var ownerUUID = await _userService.getUUIDFromToken(token);
+            if (ownerUUID == Guid.Empty)
+            {
+                return NotFound(new { Error = "User not found. Try Relogging." });
+            }
+            var recipeToDelete = await _recipeService.GetByUUID(UUID);
+            if (recipeToDelete == null)
+            {
+                return NotFound();
+            }
+            if (recipeToDelete.OwnerUUID != ownerUUID)
+            {
+                return Unauthorized();
+            }
+            var result = await _recipeService.DeleteRecipe(recipeToDelete);
+            if (result != null)
+            {
+                return BadRequest(result);
+            }
+            return Ok();
+
         }
 
         [Authorize]
@@ -80,6 +112,7 @@ namespace RecipeSiteBackend.Controllers
                 return Ok();
             }
             return NotFound();
+
         }
 
         [Authorize]
@@ -105,7 +138,7 @@ namespace RecipeSiteBackend.Controllers
             }
 
             var mediaToDelete = await _recipeService.getDescription_Media(img.RecipeUUID);
-            if(mediaToDelete != null)
+            if (mediaToDelete != null)
             {
                 _recipeService.DeleteDescriptionMedia(mediaToDelete);
             }
@@ -135,9 +168,9 @@ namespace RecipeSiteBackend.Controllers
             }
             var existsInInstructions = await _recipeService.FindImageByUrl(img.Url);
             var existsInDescriptionMedia = await _recipeService.FindDescriptionMediaByUrl(img.Url);
-            if(existsInDescriptionMedia == null && existsInInstructions == null)
+            if (existsInDescriptionMedia == null && existsInInstructions == null)
             {
-                return BadRequest(new {error= "Invalid Url" });
+                return BadRequest(new { error = "Invalid Url" });
             }
 
             var result = await _recipeService.UpdateDescriptionMediaByUrl(img);
@@ -233,7 +266,7 @@ namespace RecipeSiteBackend.Controllers
             var requestorUUID = await _userService.getUUIDFromToken(token);
             if (requestorUUID == Guid.Empty)
             {
-                return NotFound(new { Error = "User not found. Try Relogging." });
+                return Unauthorized(new { Error = "Invalid session." });
             }
             var requestedRecipe = await _recipeService.GetByUUIDIncludeAll(UUID);
             if (requestedRecipe == null)
@@ -242,7 +275,7 @@ namespace RecipeSiteBackend.Controllers
             }
             if (requestorUUID!=requestedRecipe.OwnerUUID && requestedRecipe.IsViewableByPublic==false)
             {
-                return NotFound(new { Error = "Could not locate requested resource" });
+                return Unauthorized(new { Error = "You do not have permission to access this resource" });
             }
             bool hasPermission = false;
             if (requestorUUID == requestedRecipe.OwnerUUID)
@@ -268,7 +301,7 @@ namespace RecipeSiteBackend.Controllers
             }
             if (requestedRecipe.IsViewableByPublic == false)
             {
-                return NotFound(new { Error = "Could not locate requested resource" });
+                return Unauthorized(new { Error = "You need to be signed in to access this resource" });
             }
 
             var recipeDMedia = await _recipeService.getDescription_Media(UUID);
@@ -318,48 +351,65 @@ namespace RecipeSiteBackend.Controllers
             }
         }
 
-        [HttpGet]
-        [Route("/api/Recipe/diets")]
-        public async Task<IActionResult> GetDiets()
-        {
-            var diets = await _recipeService.GetDiets();
-            if(diets == null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                return Ok(diets);
-            }
-        }
+        //[HttpGet]
+        //[Route("/api/Recipe/diets")]
+        //public async Task<IActionResult> GetDiets()
+        //{
+        //    var diets = await _recipeService.GetDiets();
+        //    if(diets == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    else
+        //    {
+        //        return Ok(diets);
+        //    }
+        //}
 
-        [HttpGet]
-        [Route("/api/Recipe/cuisines")]
-        public async Task<IActionResult> GetCuisines()
-        {
-            var cuisines = await _recipeService.GetCuisines();
-            if(cuisines == null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                return Ok(cuisines);
-            }
-        }
+        //[HttpGet]
+        //[Route("/api/Recipe/cuisines")]
+        //public async Task<IActionResult> GetCuisines()
+        //{
+        //    var cuisines = await _recipeService.GetCuisines();
+        //    if(cuisines == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    else
+        //    {
+        //        return Ok(cuisines);
+        //    }
+        //}
 
-        [HttpGet]
-        [Route("/api/Recipe/tags")]
-        public async Task<IActionResult> GetTags()
+        //[HttpGet]
+        //[Route("/api/Recipe/tags")]
+        //public async Task<IActionResult> GetTags()
+        //{
+        //    var tags = await _recipeService.GetTags();
+        //    if (tags == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    else
+        //    {
+        //        return Ok(tags);
+        //    }
+        //}
+
+        [Authorize]
+        [HttpDelete]
+        [Route("/api/Recipe/UnusedImages/Delete")]
+        public async Task<IActionResult> RemoveUnusedImages(List<string> urlList)
         {
-            var tags = await _recipeService.GetTags();
-            if (tags == null)
+            //var urlList = Urls.UrlList;
+            var result = await _recipeService.removeUnusedImages(urlList);
+            if (result == null)
             {
-                return NotFound();
+                return Ok();
             }
             else
             {
-                return Ok(tags);
+                return BadRequest();
             }
         }
     }

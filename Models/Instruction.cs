@@ -18,6 +18,6 @@ namespace RecipeSiteBackend.Models
 
         
         public ICollection<Instruction_Image>? Images { get; set; }
-        public ICollection<Instruction_Video>? Videos { get; set; }
+        //public ICollection<Instruction_Video>? Videos { get; set; }
     }
 }

@@ -8,6 +8,7 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using RecipeSiteBackend.CustomErrorHandlers;
 using Microsoft.AspNetCore.Authorization;
+using RecipeSiteBackend.Auth;
 
 namespace RecipeSiteBackend;
 
@@ -83,7 +84,7 @@ public class Program
 
         //enable when not in development
         builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthErrorHandler>();
-
+        builder.Services.AddSingleton<IJWTManager, JWTManager>();
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
