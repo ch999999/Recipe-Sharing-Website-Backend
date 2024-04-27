@@ -15,20 +15,22 @@ namespace RecipeSiteBackend.Auth
             _configuration = configuration;
         }
 
-        public Tokens GenerateToken(string username , string firstname)
+        public Tokens? GenerateToken(string username , string firstname)
         {
             return GenerateJWTTokens(username, firstname);
         }
 
-        public Tokens GenerateJWTTokens(string userName, string firstName)
+        public Tokens? GenerateJWTTokens(string userName, string firstName)
         {
-            //new Claim(ClaimTypes.Name, user.Username),
-            //    new Claim(ClaimTypes.GivenName, user.Firstname),
-            //    new Claim(ClaimTypes.Role, user.Role)
             try
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
-                var tokenKey = Encoding.UTF8.GetBytes(_configuration["JWT:SecretKey"]);
+                var secretKey = _configuration["JWT:SecretKey"];
+                if (secretKey == null)
+                {
+                    return null;
+                }
+                var tokenKey = Encoding.UTF8.GetBytes(secretKey);
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
                     Subject = new System.Security.Claims.ClaimsIdentity(new Claim[]
@@ -40,14 +42,14 @@ namespace RecipeSiteBackend.Auth
                     IssuedAt = DateTime.UtcNow,
                     Issuer = _configuration["JWT:Issuer"],
                     Audience = _configuration["JWT:Audience"],
-                    Expires = DateTime.UtcNow.AddMinutes(1),
+                    Expires = DateTime.UtcNow.AddMinutes(120),
                     SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(tokenKey), SecurityAlgorithms.HmacSha256Signature)
                 };
 
                 var token = tokenHandler.CreateToken(tokenDescriptor);
                 var refreshToken = GenerateRefreshToken();
                 return new Tokens { AccessToken = tokenHandler.WriteToken(token), RefreshToken = refreshToken };     
-            }catch(Exception ex)
+            }catch
             {
                 return null;
             }
@@ -65,7 +67,12 @@ namespace RecipeSiteBackend.Auth
 
         public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
         {
-            var Key = Encoding.UTF8.GetBytes(_configuration["JWT:SecretKey"]);
+            var secretKey = _configuration["JWT:SecretKey"];
+            if (secretKey == null)
+            {
+                throw new SecurityTokenException("Invalid token");
+            }
+            var Key = Encoding.UTF8.GetBytes(secretKey);
             var tokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
@@ -80,7 +87,8 @@ namespace RecipeSiteBackend.Auth
 
             var TokenHandler = new JwtSecurityTokenHandler();
             var principal = TokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
-            JwtSecurityToken jwtSecurityToken = securityToken as JwtSecurityToken;
+            
+            JwtSecurityToken? jwtSecurityToken = securityToken as JwtSecurityToken;
             if(jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
             {
                 throw new SecurityTokenException("Invalid token");

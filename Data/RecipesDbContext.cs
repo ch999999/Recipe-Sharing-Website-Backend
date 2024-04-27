@@ -25,7 +25,7 @@ public class RecipesDbContext : DbContext
     //public DbSet<Instruction_Video> Instruction_Videos => Set<Instruction_Video>();
     public DbSet<Note> Notes => Set<Note>();
     //public DbSet<Cuisine> Cuisines => Set<Cuisine>();
-    public DbSet<Difficulty> Difficulties => Set<Difficulty>();
+    //public DbSet<Difficulty> Difficulties => Set<Difficulty>();
     public DbSet<Description_Media> Description_Medias => Set<Description_Media>();
     public DbSet<UserRefreshToken> UserRefreshTokens => Set<UserRefreshToken>();
 }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using RecipeSiteBackend.Data;
@@ -11,9 +12,11 @@ using RecipeSiteBackend.Data;
 namespace RecipeSiteBackend.Migrations
 {
     [DbContext(typeof(RecipesDbContext))]
-    partial class RecipesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240401084112_RemovedTagsDietsReferenceFromRecipes")]
+    partial class RemovedTagsDietsReferenceFromRecipes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,6 +51,25 @@ namespace RecipeSiteBackend.Migrations
                     b.HasIndex("RecipeUUID");
 
                     b.ToTable("Description_Medias");
+                });
+
+            modelBuilder.Entity("RecipeSiteBackend.Models.Difficulty", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Difficulty_Name")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Difficulty_Name")
+                        .IsUnique();
+
+                    b.ToTable("Difficulties");
                 });
 
             modelBuilder.Entity("RecipeSiteBackend.Models.Ingredient", b =>

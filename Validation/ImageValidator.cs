@@ -33,12 +33,12 @@ namespace RecipeSiteBackend.Validation
             var base64length = imgBase64.AsSpan().Slice(imgBase64.IndexOf(',') + 1).Length;
             var fileSizeInByte = Math.Ceiling((double)base64length / 4) * 3;
 
-            if(fileSizeInByte > 7700000)  //Max. allowed 7MB = 7340032B. Set to 7700000 to allow for some leeway in inaccurate size calculation
+            if(fileSizeInByte > 2300000)  //Max. allowed 2MB = 2097152B. Set to 2300000 to allow for some leeway in inaccurate size calculation
             {
                 return new ValidationError()
                 {
                     ErrorField = "description_image",
-                    Message = "Max. size 7MB allowed"
+                    Message = "Max. size 2MB allowed"
                 };
             }
 

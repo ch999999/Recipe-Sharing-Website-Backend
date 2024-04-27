@@ -187,7 +187,7 @@ namespace RecipeSiteBackend.Validation
                 return false;
             }
             var trimmed = ingredient.Replace(" ", "");
-            if(trimmed.Length <5 || ingredient.Length>100)
+            if(trimmed.Length <5 || ingredient.Length>800)
             {
                 return false;
             }
@@ -201,7 +201,7 @@ namespace RecipeSiteBackend.Validation
                 return false;
             }
             var trimmed = instruction.Replace(" ", "");
-            if(trimmed.Length<5 || instruction.Length > 200)
+            if(trimmed.Length<5 || instruction.Length > 1000)
             {
                 return false;
             }
@@ -215,7 +215,7 @@ namespace RecipeSiteBackend.Validation
                 return false;
             }
             var trimmed = note.Replace(" ", "");
-            if (trimmed.Length < 5 || note.Length > 100)
+            if (trimmed.Length < 5 || note.Length > 800)
             {
                 return false;
             }
@@ -229,7 +229,7 @@ namespace RecipeSiteBackend.Validation
                 return false;
             }
             var trimmed = description.Replace(" ", "");
-            if(trimmed.Length<5|| description.Length > 3000)
+            if(trimmed.Length<5 || description.Length > 3000)
             {
                 return false;
             }
@@ -243,7 +243,7 @@ namespace RecipeSiteBackend.Validation
                 return false;
             }
             var trimmed = title.Replace(" ", "");
-            if (trimmed.Length < 5 || title.Length > 50)
+            if (trimmed.Length < 3 || title.Length > 50)
             {
                 return false;
             }

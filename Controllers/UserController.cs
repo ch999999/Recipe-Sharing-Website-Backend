@@ -17,13 +17,13 @@ namespace RecipeSiteBackend.Controllers
     public class UserController : ControllerBase
     {
         private readonly UserService _service;
-        private readonly IConfiguration _configuration;
+        //private readonly IConfiguration _configuration;
         private readonly IJWTManager _jwtManager;
 
         public UserController(UserService service, IConfiguration config, IJWTManager jwtManager)
         {
             _service = service;
-            _configuration = config;
+            //_configuration = config;
             _jwtManager = jwtManager;
         }
 
@@ -44,31 +44,31 @@ namespace RecipeSiteBackend.Controllers
 
         //}
 
-        [HttpPost]
-        [Route("/api/User/login")]
-        public async Task<IActionResult> Login(LoginUser loginUser)
-        {
+        //[HttpPost]
+        //[Route("/api/User/login")]
+        //public async Task<IActionResult> Login(LoginUser loginUser)
+        //{
             
 
-            if (string.IsNullOrEmpty(loginUser.Identifier))
-            {
-                return BadRequest(new ValidationError
-                {
-                    ErrorField = "identifier",
-                    Message = "Username/email cannot be empty"
-                });
-            }
+        //    if (string.IsNullOrEmpty(loginUser.Identifier))
+        //    {
+        //        return BadRequest(new ValidationError
+        //        {
+        //            ErrorField = "identifier",
+        //            Message = "Username/email cannot be empty"
+        //        });
+        //    }
 
-            User loggedInUser = await _service.Login(loginUser.Identifier, loginUser.Password);
-            if (loggedInUser != null)
-            {
-                return Ok(loggedInUser);
-            }
+        //    User loggedInUser = await _service.Login(loginUser.Identifier, loginUser.Password);
+        //    if (loggedInUser != null)
+        //    {
+        //        return Ok(loggedInUser);
+        //    }
 
-            return BadRequest(new { ErrorField = "password", Message = "Invalid Username/Email or Password." } );
-        }
+        //    return BadRequest(new { ErrorField = "password", Message = "Invalid Username/Email or Password." } );
+        //}
 
-        [EnableCors]
+        //[EnableCors]
         [Authorize]
         [HttpPost]
         [Route("/api/User/authcheck")]
@@ -131,7 +131,7 @@ namespace RecipeSiteBackend.Controllers
                    
         }
 
-        [EnableCors]
+        //[EnableCors]
         [HttpPost]
         public async Task<IActionResult> CreateUser(User newUser)
         {
@@ -144,7 +144,7 @@ namespace RecipeSiteBackend.Controllers
             }
 
             //check if username and email are taken already or not.
-            if (await _service.GetByUsername(newUser.Username) != null)
+            if (await _service.GetUserByUsername(newUser.Username) != null)
             {
                 return Conflict(new ValidationError
                 {
@@ -153,7 +153,7 @@ namespace RecipeSiteBackend.Controllers
                 });
             }
 
-            if (await _service.GetByEmail(newUser.Email) != null)
+            if (await _service.GetUserByEmail(newUser.Email) != null)
             {
                 return Conflict(new ValidationError
                 {
@@ -201,7 +201,7 @@ namespace RecipeSiteBackend.Controllers
         {
             var principal = _jwtManager.GetPrincipalFromExpiredToken(token.AccessToken);
             var username = principal.Identity?.Name;
-            var user = await _service.GetByUsername(username);
+            var user = await _service.GetUserByUsername(username);
             if (user == null)
             {
                 return Unauthorized(new {error="invalid user"}); //force user to relog
@@ -232,7 +232,7 @@ namespace RecipeSiteBackend.Controllers
         {
             var principal = _jwtManager.GetPrincipalFromExpiredToken(token.AccessToken);
             var username = principal.Identity?.Name;
-            var user = await _service.GetByUsername(username);
+            var user = await _service.GetUserByUsername(username);
             if (user == null)
             {
                 return Unauthorized(new { error = "invalid user" }); //force user to relog
@@ -242,9 +242,129 @@ namespace RecipeSiteBackend.Controllers
             return Ok(new {message= "Logout successful" });
         }
 
+        [Authorize]
+        [HttpGet]
+        [Route("/api/User/profile")]
+        public async Task<IActionResult> FetchUserDetails()
+        {
+            string token = Request.Headers["Authorization"];
+            var userUUID = await _service.GetUUIDFromToken(token);
+            if (userUUID == Guid.Empty)
+            {
+                return Unauthorized(new { Error = "Invalid session." });
+            }
+            var user  = await _service.GetUserByUUID(userUUID);
+            return Ok(user);
+        }
+
+        [Authorize]
+        [HttpPatch]
+        [Route("/api/User/profile/update-password")]
+        public async Task<IActionResult> UpdateUserPassword(string[] oldNewPasswords)
+        {
+            if(oldNewPasswords.Length <= 0 || oldNewPasswords.Length > 2)
+            {
+                return BadRequest(new { errorField = "password", message="Unknown error occurred. Try again Later." });
+            }
+
+            string token = Request.Headers["Authorization"];
+            var userUUID = await _service.GetUUIDFromToken(token);
+            if (userUUID == Guid.Empty)
+            {
+                return BadRequest(new { errorField = "password", message = "Unknown error occurred. Try Relogging." });
+            }
+
+            var userToUpdate = await _service.GetUserByUUID(userUUID);
+            var isValidOperation = await _service.IsValidUser(userToUpdate.Username, oldNewPasswords[0]);
+            if (isValidOperation == null)
+            {
+                return BadRequest(new { errorField = "password", message = "Incorrect password" });
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(oldNewPasswords[1]) || !UserValidator.passwordIsValid(oldNewPasswords[1]))
+                {
+                    return BadRequest(new ValidationError
+                    {
+                        ErrorField = "new-password",
+                        Message = "Password must be at least 8 characters long and contain both alphabets and numeric characters"
+                    });
+                }
+                var result = await _service.UpdateUserPassword(oldNewPasswords[1], userUUID);
+                if (result == null)
+                {
+                    return BadRequest(new { errorField = "password", message = "Unknown error occurred. Try again later." });
+                }
+                return Ok(new {status = "successful" });
+            }
+        }
+        
+
+        [Authorize]
+        [HttpPatch]
+        [Route("/api/User/profile/update")]
+        public async Task<IActionResult> UpdateUserDetails(User updatedUser)
+        {
+            string token = Request.Headers["Authorization"];
+            var userUUID = await _service.GetUUIDFromToken(token);
+            if (userUUID == Guid.Empty)
+            {
+                return BadRequest(new { errorField = "password", message="Unknown error occured. Try Relogging." });
+            }            
+            
+
+            var userToUpdate = await _service.GetUserByUUID(userUUID);
+            var isValidOperation = await _service.IsValidUser(userToUpdate.Username, updatedUser.Password);
+            if (isValidOperation == null)
+            {
+                return BadRequest(new {errorField = "password", message = "Incorrect password"});
+            }
+            else
+            {
+                var validationError = UserValidator.validateInput(updatedUser);
+
+                if (validationError != null && validationError.ErrorField != "password")
+                {
+                    return BadRequest(validationError);
+                }
+
+                //check if username and email are taken already or not.
+                var usernameOwner = await _service.GetUserByUsername(updatedUser.Username);
+                if (usernameOwner != null && usernameOwner.UUID!=userUUID)
+                {
+                    return Conflict(new ValidationError
+                    {
+                        ErrorField = "username",
+                        Message = "Username already taken"
+                    });
+                }
+
+                var emailOwner = await _service.GetUserByEmail(updatedUser.Email);
+                if (emailOwner != null && emailOwner.UUID != userUUID)
+                {
+                    return Conflict(new ValidationError
+                    {
+                        ErrorField = "email",
+                        Message = "Email already taken"
+                    });
+                }
+
+                var user = await _service.UpdateUser(updatedUser, userUUID);
+                if (user == null)
+                {
+                    return BadRequest(new {errorField = "password", message="Unknwon Error Occured. Try relogging."});
+
+                }
+                var newToken = _jwtManager.GenerateToken(user.Username, user.Firstname);
+                user.Token = newToken.AccessToken;
+                user.Password = string.Empty;
+                return Ok(user);
+            }
+        }
+
         [HttpPost]
-        [Route("/api/User/login2")]
-        public async Task<IActionResult> Login2(LoginUser loginUser)
+        [Route("/api/User/login")]
+        public async Task<IActionResult> Login(LoginUser loginUser)
         {
             if (string.IsNullOrEmpty(loginUser.Identifier))
             {
@@ -283,8 +403,6 @@ namespace RecipeSiteBackend.Controllers
             return Ok(token);
 
         }
-
-
     }
 }
 

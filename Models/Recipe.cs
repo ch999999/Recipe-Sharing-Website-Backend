@@ -25,8 +25,8 @@ namespace RecipeSiteBackend.Models
         //public int DifficultyId { get; set; }
         //public Difficulty? Difficulty { get; set; }
        
-        public ICollection<Tag>? Tags { get; set; }
-        public ICollection<Diet>? Diets { get; set; }
+        //public ICollection<Tag>? Tags { get; set; }
+        //public ICollection<Diet>? Diets { get; set; }
         //public ICollection<Recipe_Image>? Images { get; set; }
         //public ICollection<Recipe_Video>? Videos { get; set; }
         

@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
+//using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RecipeSiteBackend.Models;
 using RecipeSiteBackend.Services;
-using System.Reflection.Metadata;
-using System.Drawing;
-using System.IO;
+//using System.Reflection.Metadata;
+//using System.Drawing;
+//using System.IO;
 using RecipeSiteBackend.Validation;
 
 
@@ -25,20 +25,27 @@ namespace RecipeSiteBackend.Controllers
             _userService = userService;
         }
 
-
         [Authorize]
         [HttpPut]
         [Route("/api/Recipe/UpdateRecipe")]
         public async Task<IActionResult> UpdateRecipe(Recipe newRecipe)
         {
-            
-            string token = Request.Headers["Authorization"];
-            var ownerUUID = await _userService.getUUIDFromToken(token);
+            var token = Request.Headers["Authorization"];
+            if (token.ToString() == null)
+            {
+                return NotFound();
+            }
+            var validationError = RecipeValidator.validateInput(newRecipe);
+            if (validationError != null)
+            {
+                return BadRequest(validationError);
+            }
+            var ownerUUID = await _userService.GetUUIDFromToken(token);
             if (ownerUUID == Guid.Empty)
             {
                 return NotFound(new { Error = "User not found. Try Relogging." });
             }
-            var recipeToUpdate = await _recipeService.GetByUUID(newRecipe.UUID);
+            var recipeToUpdate = await _recipeService.GetRecipeByUUID(newRecipe.UUID);
             if(recipeToUpdate == null)
             {
                 return NotFound();
@@ -54,7 +61,7 @@ namespace RecipeSiteBackend.Controllers
                 {
                     if(instruction.Images.Count > 1)
                     {
-                        return BadRequest("Invalid operation. Only one image allowed per instruction"); //change instruction - instruction-images to be one-one instead of one-may later 
+                        return BadRequest("Invalid operation. Only one image allowed per instruction"); //keep instruction-instruction_images as one to many relationship for now
                     }
                     var images = instruction.Images.ToList();
                     var urlExistsInInstructions = await _recipeService.FindImageByUrl(images[0].Url);
@@ -78,12 +85,12 @@ namespace RecipeSiteBackend.Controllers
         public async Task<IActionResult> DeleteRecipe(Guid UUID)
         {
             string token = Request.Headers["Authorization"];
-            var ownerUUID = await _userService.getUUIDFromToken(token);
+            var ownerUUID = await _userService.GetUUIDFromToken(token);
             if (ownerUUID == Guid.Empty)
             {
                 return NotFound(new { Error = "User not found. Try Relogging." });
             }
-            var recipeToDelete = await _recipeService.GetByUUID(UUID);
+            var recipeToDelete = await _recipeService.GetRecipeByUUID(UUID);
             if (recipeToDelete == null)
             {
                 return NotFound();
@@ -105,9 +112,21 @@ namespace RecipeSiteBackend.Controllers
         [HttpDelete("/api/Recipe/DescriptionImage/{UUID}")]
         public async Task<IActionResult> DeleteDescpImage(Guid UUID)
         {
-            Description_Media mediaToDelete = await _recipeService.getDescription_Media(UUID);
+            string token = Request.Headers["Authorization"];
+            var ownerUUID = await _userService.GetUUIDFromToken(token);
+            if (ownerUUID == Guid.Empty)
+            {
+                return NotFound(new { Error = "User not found. Try Relogging." });
+            }
+            Description_Media mediaToDelete = await _recipeService.GetDescriptionMedia(UUID);
+
             if (mediaToDelete != null)
             {
+                var recipe = await _recipeService.GetRecipeByUUID(mediaToDelete.RecipeUUID);
+                if(recipe.OwnerUUID!= ownerUUID)
+                {
+                    return Unauthorized();
+                }
                 _recipeService.DeleteDescriptionMedia(mediaToDelete);
                 return Ok();
             }
@@ -120,15 +139,25 @@ namespace RecipeSiteBackend.Controllers
         [Route("/api/Recipe/UpdateUploadDescriptionImage")]
         public async Task<IActionResult> UploadUpdatedDescpImage(Description_Media img)
         {
+            string token = Request.Headers["Authorization"];
+            var ownerUUID = await _userService.GetUUIDFromToken(token);
+            if (ownerUUID == Guid.Empty)
+            {
+                return NotFound(new { Error = "User not found. Try Relogging." });
+            }
             if (string.IsNullOrEmpty(img.ImageBase64) || string.IsNullOrEmpty(img.FileExtension))
             {
                 return BadRequest(new { ErrorField = "description_image", message = "cannot be nothing" });
             }
 
-            var recipe = await _recipeService.GetByUUID(img.RecipeUUID);
+            var recipe = await _recipeService.GetRecipeByUUID(img.RecipeUUID);
             if (recipe == null)
             {
                 return BadRequest(new { errorField = "description-image", message = "Failed to upload, could not find associated recipe" });
+            }
+            if(recipe.OwnerUUID != ownerUUID)
+            {
+                return Unauthorized();
             }
 
             var imageError = ImageValidator.validateInput(img.ImageBase64, img.FileExtension);
@@ -137,7 +166,7 @@ namespace RecipeSiteBackend.Controllers
                 return BadRequest(imageError);
             }
 
-            var mediaToDelete = await _recipeService.getDescription_Media(img.RecipeUUID);
+            var mediaToDelete = await _recipeService.GetDescriptionMedia(img.RecipeUUID);
             if (mediaToDelete != null)
             {
                 _recipeService.DeleteDescriptionMedia(mediaToDelete);
@@ -157,14 +186,24 @@ namespace RecipeSiteBackend.Controllers
         [Route("/api/Recipe/UpdateDescriptionImage")]
         public async Task<IActionResult> UpdateDescpImage(Description_Media img)
         {
+            string token = Request.Headers["Authorization"];
+            var ownerUUID = await _userService.GetUUIDFromToken(token);
+            if (ownerUUID == Guid.Empty)
+            {
+                return NotFound(new { Error = "User not found. Try Relogging." });
+            }
             if (string.IsNullOrEmpty(img.Url))
             {
                 return BadRequest(new { ErrorField = "description_image", message = "cannot be nothing" });
             }
-            var recipe = await _recipeService.GetByUUID(img.RecipeUUID);
+            var recipe = await _recipeService.GetRecipeByUUID(img.RecipeUUID);
             if (recipe == null)
             {
                 return BadRequest(new { errorField = "description-image", message = "Failed to upload, could not find associated recipe" });
+            }
+            if (recipe.OwnerUUID != ownerUUID)
+            {
+                return Unauthorized();
             }
             var existsInInstructions = await _recipeService.FindImageByUrl(img.Url);
             var existsInDescriptionMedia = await _recipeService.FindDescriptionMediaByUrl(img.Url);
@@ -182,17 +221,26 @@ namespace RecipeSiteBackend.Controllers
         [Route("/api/Recipe/AddDescriptionImage")]
         public async Task<IActionResult> UploadDescpImage(Description_Media img)
         {
+            string token = Request.Headers["Authorization"];
+            var ownerUUID = await _userService.GetUUIDFromToken(token);
+            if (ownerUUID == Guid.Empty)
+            {
+                return NotFound(new { Error = "User not found. Try Relogging." });
+            }
             if (string.IsNullOrEmpty(img.ImageBase64) || string.IsNullOrEmpty(img.FileExtension))
             {
                 return BadRequest(new { ErrorField = "description_image", message = "cannot be nothing" });
             }
 
-            var recipe = await _recipeService.GetByUUID(img.RecipeUUID);
+            var recipe = await _recipeService.GetRecipeByUUID(img.RecipeUUID);
             if (recipe == null) 
             {
                 return BadRequest(new { errorField = "description-image", message = "Failed to upload, could not find associated recipe" });
             }
-
+            if (recipe.OwnerUUID != ownerUUID)
+            {
+                return Unauthorized();
+            }
             var imageError = ImageValidator.validateInput(img.ImageBase64, img.FileExtension);
             if(imageError != null)
             {
@@ -207,15 +255,22 @@ namespace RecipeSiteBackend.Controllers
             return Ok(result);
         }
 
+        [Authorize]
         [HttpPost]
         [Route("/api/Recipe/AddInstructionImage")]
         public async Task<IActionResult> UploadInstrImage(Instruction_Image img)
         {
+            string token = Request.Headers["Authorization"];
+            var ownerUUID = await _userService.GetUUIDFromToken(token);
+            if (ownerUUID == Guid.Empty)
+            {
+                return NotFound(new { Error = "User not found. Try Relogging." });
+            }
             if (string.IsNullOrEmpty(img.ImageBase64) || string.IsNullOrEmpty(img.FileExtension))
             {
                 return BadRequest(new { errorField = "instruction-image", message = "cannot be nothing", index = img.Instruction?.Sequence_Number });
             }
-            Console.WriteLine(img.ToString());
+            
             var instruction = await _recipeService.GetInstructionByUUID(img.InstructionUUID);
             img.Instruction = instruction;
             if (instruction == null)
@@ -228,7 +283,13 @@ namespace RecipeSiteBackend.Controllers
             {
                 return BadRequest(new {imageError, index=img.Instruction?.Sequence_Number});
             }
-            
+
+            var recipe = await _recipeService.GetRecipeByUUID(instruction.RecipeUUID);
+            if (recipe.OwnerUUID != ownerUUID)
+            {
+                return Unauthorized();
+            }
+
             img.Instruction = null;
             var result = await _recipeService.UploadInstructionImage(img);
             if (string.IsNullOrEmpty(result.Url))
@@ -243,7 +304,7 @@ namespace RecipeSiteBackend.Controllers
         public async Task<IActionResult> GetUserRecipes()
         {
             string token = Request.Headers["Authorization"];
-            var userUUID = await _userService.getUUIDFromToken(token);
+            var userUUID = await _userService.GetUUIDFromToken(token);
             if (userUUID == Guid.Empty)
             {
                 return NotFound(new { Error = "User not found. Try Relogging." });
@@ -261,14 +322,13 @@ namespace RecipeSiteBackend.Controllers
         [HttpGet("{UUID}")]
         public async Task<IActionResult> GetRecipe(Guid UUID)
         {
-
             string token = Request.Headers["Authorization"];
-            var requestorUUID = await _userService.getUUIDFromToken(token);
+            var requestorUUID = await _userService.GetUUIDFromToken(token);
             if (requestorUUID == Guid.Empty)
             {
                 return Unauthorized(new { Error = "Invalid session." });
             }
-            var requestedRecipe = await _recipeService.GetByUUIDIncludeAll(UUID);
+            var requestedRecipe = await _recipeService.GetRecipeByUUIDIncludeAll(UUID);
             if (requestedRecipe == null)
             {
                 return NotFound(new { Error = "Could not locate requested resource" });
@@ -283,7 +343,7 @@ namespace RecipeSiteBackend.Controllers
                 hasPermission = true;
             }
 
-            var recipeDMedia = await _recipeService.getDescription_Media(UUID);
+            var recipeDMedia = await _recipeService.GetDescriptionMedia(UUID);
 
             requestedRecipe.OwnerUUID = Guid.Empty;
 
@@ -294,7 +354,7 @@ namespace RecipeSiteBackend.Controllers
         [HttpGet("/api/Recipe/NoAuth/{UUID}")]
         public async Task<IActionResult> GetPublicRecipe(Guid UUID)
         {
-            var requestedRecipe = await _recipeService.GetByUUIDIncludeAll(UUID);
+            var requestedRecipe = await _recipeService.GetRecipeByUUIDIncludeAll(UUID);
             if (requestedRecipe == null)
             {
                 return NotFound(new { Error = "Could not locate requested resource" });
@@ -304,52 +364,39 @@ namespace RecipeSiteBackend.Controllers
                 return Unauthorized(new { Error = "You need to be signed in to access this resource" });
             }
 
-            var recipeDMedia = await _recipeService.getDescription_Media(UUID);
+            var recipeDMedia = await _recipeService.GetDescriptionMedia(UUID);
             requestedRecipe.OwnerUUID = Guid.Empty;
 
             return Ok(new { recipe = requestedRecipe, recipe_description_media = recipeDMedia });
         }
 
-
-
-
-        [EnableCors]
+        //[EnableCors]
         [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateRecipe(Recipe newRecipe)
         {
             string token = Request.Headers["Authorization"];
-            var ownerUUID = await _userService.getUUIDFromToken(token);
+            var ownerUUID = await _userService.GetUUIDFromToken(token);
             if(ownerUUID == Guid.Empty)
             {
                 return NotFound(new {Error = "User not found. Try Relogging." });
+            }
+            var validationError = RecipeValidator.validateInput(newRecipe);
+            if (validationError != null)
+            {
+                return BadRequest(validationError);
             }
             newRecipe.OwnerUUID = ownerUUID;
             var recipe = await _recipeService.CreateRecipe(newRecipe);
             return Ok(recipe);
         }
 
-        [HttpPost]
-        [Route("/api/Recipe/validate")]
-        public async Task<IActionResult> ValidateRecipe(Recipe newRecipe)
-        {
-            throw new NotImplementedException();
-        }
-
-        [HttpGet]
-        [Route("/api/Recipe/difficulties")]
-        public async Task<IActionResult> GetDifficulties()
-        {
-            var diffs = await _recipeService.GetDifficulties();
-            if(diffs == null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                return Ok(diffs);
-            }
-        }
+        //[HttpPost]
+        //[Route("/api/Recipe/validate")]
+        //public async Task<IActionResult> ValidateRecipe(Recipe newRecipe)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
         //[HttpGet]
         //[Route("/api/Recipe/diets")]

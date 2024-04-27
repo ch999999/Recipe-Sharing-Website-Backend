@@ -5,7 +5,7 @@ namespace RecipeSiteBackend.Auth
 {
     public interface IJWTManager
     {
-        Tokens GenerateToken(string userName, string firstName);
+        Tokens? GenerateToken(string userName, string firstName);
         string GenerateRefreshToken();
         ClaimsPrincipal GetPrincipalFromExpiredToken(string token);
 

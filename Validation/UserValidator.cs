@@ -65,7 +65,7 @@ namespace RecipeSiteBackend.Validation
             
         }
 
-        private static bool passwordIsValid(string password)
+        public static bool passwordIsValid(string password)
         {
             // Must have at least 8 characters
             if (password.Length < 8)
