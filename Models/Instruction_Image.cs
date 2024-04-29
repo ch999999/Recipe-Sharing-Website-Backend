@@ -22,6 +22,8 @@ namespace RecipeSiteBackend.Models
         public string? ImageBase64 { get; set; }
         [NotMapped]
         public string? FileExtension { get; set; }
+        [NotMapped]
+        public string[]? ExistingUrls { get; set; }
 
     }
 }

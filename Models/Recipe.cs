@@ -36,6 +36,8 @@ namespace RecipeSiteBackend.Models
         
         public ICollection<Note>? Notes { get; set; }
         public ICollection<Instruction>? Instructions { get; set; }
+        [NotMapped]
+        public string[]? ExistingUrls { get; set; }
         
 
     }

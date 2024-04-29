@@ -66,7 +66,7 @@ namespace RecipeSiteBackend.Controllers
                     var images = instruction.Images.ToList();
                     var urlExistsInInstructions = await _recipeService.FindImageByUrl(images[0].Url);
                     var urlExistsInDescription = await _recipeService.FindDescriptionMediaByUrl(images[0].Url);
-                    if(urlExistsInInstructions == null && urlExistsInDescription==null)
+                    if(urlExistsInInstructions == null && urlExistsInDescription==null && !newRecipe.ExistingUrls.Contains(images[0].Url))
                     {
                         return BadRequest(new {error = "Invalid Url", problemChild = images[0].Url });
                     }
@@ -207,7 +207,8 @@ namespace RecipeSiteBackend.Controllers
             }
             var existsInInstructions = await _recipeService.FindImageByUrl(img.Url);
             var existsInDescriptionMedia = await _recipeService.FindDescriptionMediaByUrl(img.Url);
-            if (existsInDescriptionMedia == null && existsInInstructions == null)
+
+            if (existsInDescriptionMedia == null && existsInInstructions == null && !img.ExistingUrls.Contains(img.Url))
             {
                 return BadRequest(new { error = "Invalid Url" });
             }
