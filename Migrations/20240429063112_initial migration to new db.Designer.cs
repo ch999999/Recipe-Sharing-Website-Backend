@@ -12,8 +12,8 @@ using RecipeSiteBackend.Data;
 namespace RecipeSiteBackend.Migrations
 {
     [DbContext(typeof(RecipesDbContext))]
-    [Migration("20240328042056_RemoveUnusedTables")]
-    partial class RemoveUnusedTables
+    [Migration("20240429063112_initial migration to new db")]
+    partial class initialmigrationtonewdb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,21 +24,6 @@ namespace RecipeSiteBackend.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("DietRecipe", b =>
-                {
-                    b.Property<int>("DietsId")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("RecipesUUID")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("DietsId", "RecipesUUID");
-
-                    b.HasIndex("RecipesUUID");
-
-                    b.ToTable("DietRecipe");
-                });
 
             modelBuilder.Entity("RecipeSiteBackend.Models.Description_Media", b =>
                 {
@@ -66,44 +51,6 @@ namespace RecipeSiteBackend.Migrations
                     b.HasIndex("RecipeUUID");
 
                     b.ToTable("Description_Medias");
-                });
-
-            modelBuilder.Entity("RecipeSiteBackend.Models.Diet", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Diet_Name")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Diet_Name")
-                        .IsUnique();
-
-                    b.ToTable("Diet");
-                });
-
-            modelBuilder.Entity("RecipeSiteBackend.Models.Difficulty", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Difficulty_Name")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Difficulty_Name")
-                        .IsUnique();
-
-                    b.ToTable("Difficulties");
                 });
 
             modelBuilder.Entity("RecipeSiteBackend.Models.Ingredient", b =>
@@ -269,25 +216,6 @@ namespace RecipeSiteBackend.Migrations
                     b.ToTable("Recipes");
                 });
 
-            modelBuilder.Entity("RecipeSiteBackend.Models.Tag", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Tag_Name")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Tag_Name")
-                        .IsUnique();
-
-                    b.ToTable("Tag");
-                });
-
             modelBuilder.Entity("RecipeSiteBackend.Models.User", b =>
                 {
                     b.Property<Guid>("UUID")
@@ -353,36 +281,6 @@ namespace RecipeSiteBackend.Migrations
                     b.HasKey("UUID");
 
                     b.ToTable("UserRefreshTokens");
-                });
-
-            modelBuilder.Entity("RecipeTag", b =>
-                {
-                    b.Property<Guid>("RecipesUUID")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("TagsId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("RecipesUUID", "TagsId");
-
-                    b.HasIndex("TagsId");
-
-                    b.ToTable("RecipeTag");
-                });
-
-            modelBuilder.Entity("DietRecipe", b =>
-                {
-                    b.HasOne("RecipeSiteBackend.Models.Diet", null)
-                        .WithMany()
-                        .HasForeignKey("DietsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("RecipeSiteBackend.Models.Recipe", null)
-                        .WithMany()
-                        .HasForeignKey("RecipesUUID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("RecipeSiteBackend.Models.Description_Media", b =>
@@ -468,21 +366,6 @@ namespace RecipeSiteBackend.Migrations
                         .IsRequired();
 
                     b.Navigation("Owner");
-                });
-
-            modelBuilder.Entity("RecipeTag", b =>
-                {
-                    b.HasOne("RecipeSiteBackend.Models.Recipe", null)
-                        .WithMany()
-                        .HasForeignKey("RecipesUUID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("RecipeSiteBackend.Models.Tag", null)
-                        .WithMany()
-                        .HasForeignKey("TagsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("RecipeSiteBackend.Models.Instruction", b =>

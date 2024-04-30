@@ -52,7 +52,7 @@ namespace RecipeSiteBackend.Validation
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("byte[] to image error: "+ex.Message);
+                    Console.WriteLine("byte[] to image error: " + ex.Message);
                     return new ValidationError()
                     {
                         ErrorField = "description_image",

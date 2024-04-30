@@ -179,6 +179,7 @@ namespace RecipeSiteBackend.Controllers
                 return BadRequest(new { errorField = "description_image", message = "Failed to upload" });
             }
             return Ok(result);
+      
         }
 
         [Authorize]

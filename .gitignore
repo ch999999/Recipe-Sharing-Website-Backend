@@ -229,3 +229,5 @@ db*
 appsettings.Development.json
 appsettings.json
 appsettings.Production.json
+PublishProfiles*
+ServiceDependencies*

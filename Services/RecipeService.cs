@@ -208,18 +208,22 @@ namespace RecipeSiteBackend.Services
             byte[] imgBytes = Convert.FromBase64String(imgBase64);
             var randomFileName = Guid.NewGuid().ToString();
             var imgName = randomFileName + media.FileExtension;
-            var imgPath = "./Temp/" + imgName;
+            //var imgPath = "./Temp/" + imgName;
+            var imgPath = "./" + imgName;
             File.WriteAllBytes(imgPath, imgBytes);
 
             try
             {
                 BasicAWSCredentials creds = new BasicAWSCredentials(_configuration["AWS:ACCESS_KEY"], _configuration["AWS:SECRET_KEY"]);
+                
                 var fileTransferUtility = new TransferUtility(new AmazonS3Client(creds, Amazon.RegionEndpoint.APSoutheast1));
                 var filePath = imgPath;
                 var bucketName = _configuration["AWS:AWS_BUCKET"];
+                
                 var keyName = imgName;
                 fileTransferUtility.Upload(filePath, bucketName, keyName);
                 var imgUrl = "https://" + bucketName + ".s3." + _configuration["AWS:AWS_REGION"] + ".amazonaws.com/" + keyName;
+                
 
                 media.Url = imgUrl;
 
@@ -252,7 +256,8 @@ namespace RecipeSiteBackend.Services
             byte[] imgBytes = Convert.FromBase64String(imgBase64);
             var randomFileName = Guid.NewGuid().ToString();
             var imgName = randomFileName + image.FileExtension;
-            var imgPath = "./Temp/" + imgName;
+            //var imgPath = "./Temp/" + imgName;
+            var imgPath = "./" + imgName;
             File.WriteAllBytes(imgPath, imgBytes);
             string imgUrl = string.Empty;
 
