@@ -10,8 +10,9 @@ The frontend is written using the [`Next.js`](https://nextjs.org/) framework for
 ## Backend
 The backend consists of an ASP.NET Core API app, a PostgreSQL database and a [`AWS S3 Bucket`](https://aws.amazon.com/s3/) for storing images. The current implementation uses [`Microsoft Azure`](https://azure.microsoft.com/) to deploy both the API app and the Postgre database.
 
-## Database schema
-![Created using https://sql.toad.cz/](https://github.com/ch999999/Recipe-Sharing-Website-Backend/blob/master/Schema_Documentation/ERD.PNG) <br />
+## Database Structure
+![Database Schema](https://github.com/ch999999/Recipe-Sharing-Website-Backend/blob/master/Schema_Documentation/ERD.PNG) <br />
+*Simple diagram showing the database structure. Made using https://sql.toad.cz/*
 
 ## Feedback and Bug Reports
 Feedback, suggestions and bugs can be reported to recipekamufeedback@outlook.com at this time.
